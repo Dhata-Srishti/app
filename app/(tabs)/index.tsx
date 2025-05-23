@@ -2,12 +2,13 @@ import MooAIChat from '@/app/(app)/persona-ai';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useSession } from '@/context';
+import { useSOS } from '@/context/SOSContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { ColorValue, Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -15,6 +16,11 @@ interface Message {
   text: string;
   sender: 'user' | 'bot';
 }
+
+const TEAL = '#6ec3c1';
+const CREAM = '#fff6e6';
+const DARK = '#1a2a36';
+const TILE_GRADIENT: [ColorValue, ColorValue] = ['#a8e6e6', '#6ec3c1'];
 
 export default function HomeScreen() {
   const { user } = useSession();
@@ -25,6 +31,7 @@ export default function HomeScreen() {
   const [messages, setMessages] = useState<Message[]>([
     { text: "Welcome to Moo AI! 🐄 Ask me about Indian cow breeds.\n\n1️⃣ Learn about a breed's origin, history & socio-economic benefits.\n2️⃣ Don't know a breed? I can list all or filter by region.\n3️⃣ No cruelty-related queries allowed.", sender: 'bot' },
   ]);
+  const { sendSOS } = useSOS();
   
   // Handle pull-to-refresh action
   const onRefresh = () => {
@@ -56,7 +63,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <ThemedView style={[styles.container, { backgroundColor: CREAM }]}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -65,7 +72,7 @@ export default function HomeScreen() {
       >
         {/* Welcome Text */}
         <View style={styles.welcomeContainer}>
-          <ThemedText style={styles.welcomeText}>
+          <ThemedText style={[styles.welcomeText, { color: DARK }]}>
             {t('common.welcome', 'Welcome')}, {user?.displayName || t('common.user', 'User')}!
           </ThemedText>
         </View>
@@ -76,16 +83,12 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.menuCard}
             onPress={() => navigateToSection('forum')}
+            activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={['#fdbb65', '#f9a825', '#f57f17']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
+            <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="chatbubbles-outline" size={30} color="#FFF" />
+                  <Ionicons name="chatbubbles-outline" size={36} color={TEAL} />
                 </View>
                 <Text style={styles.cardTitle}>{t('explore.forum', 'Forum')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.forumDescription', 'Know about others opinions, and share yours!')}</Text>
@@ -97,16 +100,12 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.menuCard}
             onPress={() => navigateToSection('report')}
+            activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={['#fdbb65', '#f9a825', '#f57f17']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
+            <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="alert-circle-outline" size={30} color="#FFF" />
+                  <Ionicons name="alert-circle-outline" size={36} color={TEAL} />
                 </View>
                 <Text style={styles.cardTitle}>{t('explore.reportStrayCow', 'Report stray cow')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.helpHelpless', 'Help the helpless')}</Text>
@@ -118,16 +117,12 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.menuCard}
             onPress={() => navigateToSection('marketplace')}
+            activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={['#fdbb65', '#f9a825', '#f57f17']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
+            <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="basket-outline" size={30} color="#FFF" />
+                  <Ionicons name="basket-outline" size={36} color={TEAL} />
                 </View>
                 <Text style={styles.cardTitle}>{t('marketplace.title', 'Shop')}</Text>
                 <Text style={styles.cardDescription}>{t('marketplace.description', 'Find Dairy products, services near you')}</Text>
@@ -139,16 +134,12 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.menuCard}
             onPress={() => navigateToSection('network')}
+            activeOpacity={0.85}
           >
-            <LinearGradient
-              colors={['#fdbb65', '#f9a825', '#f57f17']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.menuGradient}
-            >
+            <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="map-outline" size={30} color="#FFF" />
+                  <Ionicons name="map-outline" size={36} color={TEAL} />
                 </View>
                 <Text style={styles.cardTitle}>{t('explore.network', 'Network')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.networkDescription', 'Find Cows near you')}</Text>
@@ -158,25 +149,29 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
       
+      {/* SOS Button */}
+      <TouchableOpacity
+        style={styles.sosButton}
+        onPress={sendSOS}
+        activeOpacity={0.8}
+      >
+         <Ionicons name="warning-outline" size={30} color="#FFF" />
+      </TouchableOpacity>
+
       {/* Chatbot Button */}
       <View style={styles.chatButtonContainer}>
-        <LinearGradient
-          colors={['#fdbb65', '#f9a825', '#f57f17']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientBorder}
-        >
+        <View style={[styles.gradientBorder, { borderColor: TEAL, backgroundColor: '#fff' }]}>
           <TouchableOpacity
-            style={styles.chatButton}
+            style={[styles.chatButton, { backgroundColor: '#fff' }]}
             onPress={() => setIsChatVisible(true)}
             activeOpacity={0.8}
           >
             <View style={styles.buttonContent}>
-              <Ionicons name="chatbubble-ellipses" size={30} color="#5D4037" style={styles.aiIcon} />
-              <Text style={styles.buttonText}>{t('explore.askMooAI', 'Ask EMoo AI')}</Text>
+              <Ionicons name="chatbubble-ellipses" size={30} color={TEAL} style={styles.aiIcon} />
+              <Text style={[styles.buttonText, { color: TEAL }]}>{t('explore.askMooAI', 'Ask EMoo AI')}</Text>
             </View>
           </TouchableOpacity>
-        </LinearGradient>
+        </View>
       </View>
 
       {/* MooAIChat Modal */}
@@ -204,7 +199,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff1de',
+    backgroundColor: CREAM,
   },
   scrollView: {
     flex: 1,
@@ -228,41 +223,48 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   menuCard: {
-    width: '48%',
-    height: 180,
-    borderRadius: 16,
-    marginBottom: 16,
+    width: '47%',
+    aspectRatio: 1,
+    borderRadius: 20,
+    marginBottom: 18,
     overflow: 'hidden',
+    elevation: 2,
+    backgroundColor: 'transparent',
   },
   menuGradient: {
-    width: '100%',
-    height: '100%',
-  },
-  cardContent: {
-    padding: 16,
-    alignItems: 'center',
-    height: '100%',
-  },
-  iconCircle: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255,255,255,0.3)',
-    marginBottom: 12,
+    flex: 1,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 10,
+  },
+  cardContent: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  iconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#fff',
+    marginBottom: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 4,
     textAlign: 'center',
-    color: '#FFFFFF',
+    color: DARK,
   },
   cardDescription: {
     fontSize: 12,
     textAlign: 'center',
-    color: '#FFFFFF',
+    color: DARK,
+    opacity: 0.8,
   },
   chatButtonContainer: {
     position: 'absolute',
@@ -277,7 +279,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 28,
-    padding: 3.25, // Border thickness
+    borderWidth: 3,
+    borderColor: TEAL,
+    backgroundColor: '#fff',
     shadowColor: 'rgba(93, 64, 55, 0.1)',
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.8,
@@ -287,7 +291,7 @@ const styles = StyleSheet.create({
   chatButton: {
     flex: 1,
     borderRadius: 27,
-    backgroundColor: '#faebd7',
+    backgroundColor: '#fff',
     overflow: 'hidden',
   },
   buttonContent: {
@@ -303,7 +307,7 @@ const styles = StyleSheet.create({
   buttonText: {
     flex: 1,
     fontSize: 16,
-    color: '#5D4037',
+    color: TEAL,
   },
   header: {
     flexDirection: 'row',
@@ -318,5 +322,18 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#5D4037',
+  },
+  sosButton: {
+    position: 'absolute',
+    bottom: 90,
+    right: 20,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FF0000',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    zIndex: 1,
   },
 });
