@@ -63,16 +63,11 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Dashboard Header */}
-        <View style={styles.headerContainer}>
-          <ThemedText type="title" style={styles.dashboardTitle}>
-            {t('dashboard.title', 'Dashboard')}
+        {/* Welcome Text */}
+        <View style={styles.welcomeContainer}>
+          <ThemedText style={styles.welcomeText}>
+            {t('common.welcome', 'Welcome')}, {user?.displayName || t('common.user', 'User')}!
           </ThemedText>
-          <View style={styles.welcomeTextContainer}>
-            <ThemedText style={styles.welcomeLabel}>{t('common.welcome', 'Welcome')}, </ThemedText>
-            <ThemedText style={styles.nameText}>{user?.displayName || t('common.user', 'User')}</ThemedText>
-            <ThemedText style={styles.exclamation}>!</ThemedText>
-          </View>
         </View>
 
         {/* Menu Grid */}
@@ -83,7 +78,7 @@ export default function HomeScreen() {
             onPress={() => navigateToSection('forum')}
           >
             <LinearGradient
-              colors={['#8D6E63', '#795548', '#5D4037']}
+              colors={['#fdbb65', '#f9a825', '#f57f17']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.menuGradient}
@@ -104,7 +99,7 @@ export default function HomeScreen() {
             onPress={() => navigateToSection('report')}
           >
             <LinearGradient
-              colors={['#8D6E63', '#795548', '#5D4037']}
+              colors={['#fdbb65', '#f9a825', '#f57f17']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.menuGradient}
@@ -125,7 +120,7 @@ export default function HomeScreen() {
             onPress={() => navigateToSection('marketplace')}
           >
             <LinearGradient
-              colors={['#8D6E63', '#795548', '#5D4037']}
+              colors={['#fdbb65', '#f9a825', '#f57f17']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.menuGradient}
@@ -146,7 +141,7 @@ export default function HomeScreen() {
             onPress={() => navigateToSection('network')}
           >
             <LinearGradient
-              colors={['#8D6E63', '#795548', '#5D4037']}
+              colors={['#fdbb65', '#f9a825', '#f57f17']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.menuGradient}
@@ -166,7 +161,7 @@ export default function HomeScreen() {
       {/* Chatbot Button */}
       <View style={styles.chatButtonContainer}>
         <LinearGradient
-          colors={['#a67b6d', '#5D4037']}
+          colors={['#fdbb65', '#f9a825', '#f57f17']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
           style={styles.gradientBorder}
@@ -209,38 +204,19 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#faebd7',
+    backgroundColor: '#fff1de',
   },
   scrollView: {
     flex: 1,
   },
-  headerContainer: {
+  welcomeContainer: {
     paddingHorizontal: 16,
     paddingTop: 20,
     paddingBottom: 10,
-    alignItems: 'flex-start',
   },
-  dashboardTitle: {
-    fontSize: 30,
+  welcomeText: {
+    fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#5D4037',
-  },
-  welcomeTextContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  welcomeLabel: {
-    fontSize: 18,
-    color: '#5D4037',
-  },
-  nameText: {
-    fontSize: 18,
-    color: '#5D4037',
-    fontWeight: '600',
-  },
-  exclamation: {
-    fontSize: 18,
     color: '#5D4037',
   },
   menuGrid: {
