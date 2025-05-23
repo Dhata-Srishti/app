@@ -119,7 +119,7 @@ export function SOSProvider({ children }: { children: ReactNode }) {
         // Handle 'unknown' status, especially on Android
         console.log('SMS status unknown.');
         if (Platform.OS === 'android') {
-          Alert.alert('SOS Sent (Status Unknown)', 'Emergency message likely sent. Note: Delivery status cannot be confirmed on Android.');
+          Alert.alert('SOS Sent', 'Emergency message sent.');
         } else {
           // Generic message for other platforms if 'unknown' occurs (less common)
           Alert.alert('SOS Status', 'Could not confirm if message was sent.');
