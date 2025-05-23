@@ -103,12 +103,17 @@ export default function DhataDemo() {
     }
 
     try {
-      const audioUrl = await dhataApi.textToSpeech({
-        input_text: ttsText
+      const ttsResponse = await dhataApi.textToSpeech({
+        input_text: ttsText,
+        return_translation: true  // Get the Kannada translation
       });
       
-      if (audioUrl) {
-        Alert.alert('Success', `Audio generated: ${audioUrl}`);
+      if (ttsResponse.audioUri) {
+        let message = `Audio generated successfully!\n\nOriginal: ${ttsResponse.original_text}`;
+        if (ttsResponse.kannada_text) {
+          message += `\n\nKannada (for TTS): ${ttsResponse.kannada_text}`;
+        }
+        Alert.alert('TTS Success', message);
       } else {
         Alert.alert('Error', 'Failed to generate audio');
       }

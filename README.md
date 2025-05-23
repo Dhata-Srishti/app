@@ -94,7 +94,7 @@ The Flask backend runs on `http://localhost:5001` and provides:
 - `POST /api/vision_query` - Image analysis
 - `POST /api/asr` - Speech to text
 - `POST /api/translate` - Text translation
-- `POST /api/tts` - Text to speech
+- `POST /api/tts` - Text to speech (auto-translates to Kannada)
 - `POST /api/extract_document` - Document text extraction
 
 ## Testing the Integration

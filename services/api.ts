@@ -1,9 +1,12 @@
 // Dhata Backend API Service
 // This service handles all communication with the Flask backend
 
-// Use the local IP address instead of localhost for React Native compatibility
-// To update: Run 'ifconfig | grep "inet " | grep -v 127.0.0.1' to get your current IP
-const API_BASE_URL = 'http://192.168.199.96:5001';
+import * as FileSystem from 'expo-file-system';
+import { Platform } from 'react-native';
+import { API_CONFIG, validateApiConfig } from '../config/api.config';
+
+// Use centralized configuration
+const API_BASE_URL = API_CONFIG.BASE_URL;
 
 export interface ApiResponse<T = any> {
   success: boolean;
@@ -35,6 +38,15 @@ export interface ASRRequest {
 
 export interface TTSRequest {
   input_text: string;
+  src_lang?: string;  // Optional source language, defaults to 'english'
+  return_translation?: boolean;  // Optional flag to return translation text
+}
+
+export interface TTSResponse {
+  audioUri: string | null;
+  kannada_text?: string;
+  original_text?: string;
+  src_lang?: string;
 }
 
 export interface DocumentExtractionRequest {
@@ -80,10 +92,15 @@ const mapLanguageCode = (lang?: string): string => {
 
 class DhataApiService {
   private baseUrl: string;
-  private timeoutMs: number = 30000; // 30 second timeout
+  private timeoutMs: number = API_CONFIG.TIMEOUT;
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
+    
+    // Validate configuration on initialization
+    if (!validateApiConfig()) {
+      console.warn('API configuration validation failed. Please check your settings.');
+    }
   }
 
   /**
@@ -253,9 +270,11 @@ class DhataApiService {
 
   /**
    * Convert text to speech
-   * Returns a URL to the generated audio file
+   * Automatically translates input text to Kannada before generating speech
+   * (TTS only works with Kannada text)
+   * Returns a TTSResponse with audio URI and optional translation info
    */
-  async textToSpeech(request: TTSRequest): Promise<string | null> {
+  async textToSpeech(request: TTSRequest): Promise<TTSResponse> {
     try {
       const response = await fetch(`${this.baseUrl}/api/tts`, {
         method: 'POST',
@@ -263,19 +282,153 @@ class DhataApiService {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          input_text: request.input_text
+          input_text: request.input_text,
+          src_lang: request.src_lang || 'english',
+          return_translation: request.return_translation || false
         })
       });
 
       if (response.ok) {
-        // Return the URL to the audio file
-        return response.url;
+        // Check if response is JSON (when return_translation=true) or binary audio
+        const contentType = response.headers.get('content-type');
+        
+        if (contentType && contentType.includes('application/json')) {
+          // Handle JSON response with translation
+          const jsonResponse = await response.json();
+          
+          if (jsonResponse.success && jsonResponse.audio_base64) {
+            // Convert base64 to audio file
+            const audioBlob = new Blob(
+              [Uint8Array.from(atob(jsonResponse.audio_base64), c => c.charCodeAt(0))],
+              { type: 'audio/mp3' }
+            );
+            
+            // For web platform, use blob URL directly
+            if (Platform.OS === 'web') {
+              const blobUrl = URL.createObjectURL(audioBlob);
+              console.log('TTS audio blob URL created:', blobUrl);
+              return {
+                audioUri: blobUrl,
+                kannada_text: jsonResponse.kannada_text,
+                original_text: jsonResponse.original_text,
+                src_lang: jsonResponse.src_lang
+              };
+            }
+            
+            // For native platforms, save the audio file
+            const reader = new FileReader();
+            return new Promise<TTSResponse>((resolve) => {
+              reader.onloadend = async () => {
+                try {
+                  const base64data = reader.result as string;
+                  const base64Audio = base64data.split(',')[1];
+                  
+                  const timestamp = Date.now();
+                  const filename = `tts_audio_${timestamp}.mp3`;
+                  const fileUri = FileSystem.documentDirectory + filename;
+                  
+                  await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
+                    encoding: FileSystem.EncodingType.Base64,
+                  });
+                  
+                  console.log('TTS audio saved to:', fileUri);
+                  resolve({
+                    audioUri: fileUri,
+                    kannada_text: jsonResponse.kannada_text,
+                    original_text: jsonResponse.original_text,
+                    src_lang: jsonResponse.src_lang
+                  });
+                } catch (error) {
+                  console.error('Error saving TTS audio file:', error);
+                  resolve({
+                    audioUri: null,
+                    kannada_text: jsonResponse.kannada_text,
+                    original_text: jsonResponse.original_text,
+                    src_lang: jsonResponse.src_lang
+                  });
+                }
+              };
+              reader.onerror = () => {
+                console.error('Error reading audio blob');
+                resolve({
+                  audioUri: null,
+                  kannada_text: jsonResponse.kannada_text,
+                  original_text: jsonResponse.original_text,
+                  src_lang: jsonResponse.src_lang
+                });
+              };
+              reader.readAsDataURL(audioBlob);
+            });
+          } else {
+            throw new Error(jsonResponse.error || 'TTS failed');
+          }
+        } else {
+          // Handle binary audio response (legacy behavior)
+          const audioBlob = await response.blob();
+          
+          // For web platform, use blob URL directly
+          if (Platform.OS === 'web') {
+            const blobUrl = URL.createObjectURL(audioBlob);
+            console.log('TTS audio blob URL created:', blobUrl);
+            return {
+              audioUri: blobUrl,
+              original_text: request.input_text,
+              src_lang: request.src_lang || 'english'
+            };
+          }
+          
+          // For native platforms, convert blob to base64 and save to file system
+          const reader = new FileReader();
+          return new Promise<TTSResponse>((resolve) => {
+            reader.onloadend = async () => {
+              try {
+                const base64data = reader.result as string;
+                const base64Audio = base64data.split(',')[1];
+                
+                const timestamp = Date.now();
+                const filename = `tts_audio_${timestamp}.mp3`;
+                const fileUri = FileSystem.documentDirectory + filename;
+                
+                await FileSystem.writeAsStringAsync(fileUri, base64Audio, {
+                  encoding: FileSystem.EncodingType.Base64,
+                });
+                
+                console.log('TTS audio saved to:', fileUri);
+                resolve({
+                  audioUri: fileUri,
+                  original_text: request.input_text,
+                  src_lang: request.src_lang || 'english'
+                });
+              } catch (error) {
+                console.error('Error saving TTS audio file:', error);
+                resolve({
+                  audioUri: null,
+                  original_text: request.input_text,
+                  src_lang: request.src_lang || 'english'
+                });
+              }
+            };
+            reader.onerror = () => {
+              console.error('Error reading audio blob');
+              resolve({
+                audioUri: null,
+                original_text: request.input_text,
+                src_lang: request.src_lang || 'english'
+              });
+            };
+            reader.readAsDataURL(audioBlob);
+          });
+        }
       } else {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
       console.error('Text to speech failed:', error);
-      return null;
+      return {
+        audioUri: null,
+        original_text: request.input_text,
+        src_lang: request.src_lang || 'english'
+      };
     }
   }
 
@@ -331,4 +484,4 @@ class DhataApiService {
 export const dhataApi = new DhataApiService();
 
 // Export the class for custom instances
-export default DhataApiService; 
+export default DhataApiService;

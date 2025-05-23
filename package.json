@@ -3,12 +3,12 @@
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
-    "start": "expo start",
+    "start": "npx expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "lint": "expo lint",
+    "android": "npx expo start --android",
+    "ios": "npx expo start --ios",
+    "web": "npx expo start --web",
+    "lint": "npx expo lint",
     "backend": "cd backend && ./run.sh",
     "backend:install": "cd backend && python3 -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
     "backend:dev": "cd backend && source venv/bin/activate && DWANI_API_KEY=harshringsia18@gmail.com_dwani DWANI_API_BASE_URL=https://dwani-pulakeshi.hf.space python app.py",
@@ -48,7 +48,10 @@
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
     "react-native-web": "~0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "expo-av": "~15.1.4",
+    "expo-file-system": "~18.1.10",
+    "expo-audio": "~0.4.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
