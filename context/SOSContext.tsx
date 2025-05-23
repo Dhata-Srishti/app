@@ -116,8 +116,8 @@ export function SOSProvider({ children }: { children: ReactNode }) {
       } else if (result === 'cancelled') {
          console.log('SOS message cancelled by user.');
       } else if (result === 'unknown'){
-        console.log('SMS status unknown.');
-         Alert.alert('SOS Status', 'Could not confirm if message was sent.');
+        console.log('SMS status unknown (Android behavior).');
+         Alert.alert('SOS Status', 'Message sent to your phone\'s messaging app. Please check there.');
       }
        else {
         console.error('Failed to send SOS message:', result);
