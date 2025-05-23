@@ -1,69 +1,47 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState } from 'react';
+import { dbUtils } from '../firebaseConfig';
 
 interface User {
-  displayName: string | null;
-  email: string | null;
-  uid: string | null;
+  displayName: string;
+  email: string;
+  phoneNumber?: string;
+  photoURL?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 interface SessionContextType {
   user: User | null;
   setUser: (user: User | null) => void;
-  loading: boolean;
+  updateUserProfile: (data: Partial<User>) => Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextType>({
   user: null,
   setUser: () => {},
-  loading: true,
+  updateUserProfile: async () => {},
 });
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Load user data from AsyncStorage on mount
-    const loadUser = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('user');
-        if (userData) {
-          setUser(JSON.parse(userData));
-        }
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const updateUserProfile = async (data: Partial<User>) => {
+    if (!user) return;
 
-    loadUser();
-  }, []);
-
-  // Save user data to AsyncStorage whenever it changes
-  useEffect(() => {
-    const saveUser = async () => {
-      if (user) {
-        try {
-          await AsyncStorage.setItem('user', JSON.stringify(user));
-        } catch (error) {
-          console.error('Error saving user data:', error);
-        }
-      } else {
-        try {
-          await AsyncStorage.removeItem('user');
-        } catch (error) {
-          console.error('Error removing user data:', error);
-        }
-      }
-    };
-
-    saveUser();
-  }, [user]);
+    try {
+      // Update user data in Firestore
+      await dbUtils.updateUser(user.displayName, data);
+      
+      // Update local user state
+      setUser(prev => prev ? { ...prev, ...data } : null);
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  };
 
   return (
-    <SessionContext.Provider value={{ user, setUser, loading }}>
+    <SessionContext.Provider value={{ user, setUser, updateUserProfile }}>
       {children}
     </SessionContext.Provider>
   );
