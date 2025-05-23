@@ -2,14 +2,16 @@ import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { dhataApi } from '../../services/api';
 
 interface Message {
   text: string;
@@ -24,6 +26,7 @@ interface MooAIChatProps {
 
 export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatProps) {
   const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
@@ -33,25 +36,68 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
   }, [messages]);
 
   const handleSend = async () => {
-    if (!inputText.trim()) return;
+    if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
       text: inputText.trim(),
       sender: 'user',
     };
 
-    setMessages([...messages, userMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
     setInputText('');
+    setIsLoading(true);
 
-    // Simulate bot response
-    setTimeout(() => {
+    try {
+      console.log('Sending query to API:', userMessage.text);
+      
+      // Send query to backend API
+      const response = await dhataApi.textQuery({
+        prompt: userMessage.text,
+        src_lang: 'english',
+        tgt_lang: 'english'
+      });
+
+      console.log('API Response:', response);
+
+      let botResponseText = '';
+      
+      if (response.success && response.data) {
+        // Extract the response text from the API response
+        // The exact structure may vary based on the Dwani API response format
+        if (typeof response.data === 'string') {
+          botResponseText = response.data;
+        } else if (response.data.response) {
+          botResponseText = response.data.response;
+        } else if (response.data.text) {
+          botResponseText = response.data.text;
+        } else if (response.data.answer) {
+          botResponseText = response.data.answer;
+        } else {
+          // Fallback to stringify the response if we can't find the text
+          botResponseText = JSON.stringify(response.data);
+        }
+      } else {
+        console.error('API Error:', response.error);
+        botResponseText = `I'm sorry, I encountered an error: ${response.error || 'Unknown error'}. Please try again.`;
+      }
+
       const botResponse: Message = {
-        text: "I'm Moo AI, your friendly cow breed expert! 🐄 I can help you learn about Indian cow breeds, their characteristics, and benefits. What would you like to know?",
+        text: botResponseText,
         sender: 'bot',
       };
-      const updatedMessages = [...messages, botResponse];
-      setMessages(updatedMessages);
-    }, 1000);
+
+      setMessages([...updatedMessages, botResponse]);
+    } catch (error) {
+      console.error('Chat API Error:', error);
+      const errorMessage: Message = {
+        text: `I'm sorry, I'm having trouble connecting to my AI service. This could be due to:\n\n• Backend server not running\n• Network connectivity issues\n• Server overload\n\nPlease try again in a moment.\n\nTechnical details: ${error}`,
+        sender: 'bot',
+      };
+      setMessages([...updatedMessages, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,6 +122,16 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
             <ThemedText style={styles.messageText}>{message.text}</ThemedText>
           </View>
         ))}
+        
+        {/* Show loading indicator when AI is thinking */}
+        {isLoading && (
+          <View style={[styles.messageBubble, styles.botMessage, styles.loadingMessage]}>
+            <ActivityIndicator size="small" color="#FFFFFF" />
+            <ThemedText style={[styles.messageText, styles.loadingText]}>
+              AI is thinking...
+            </ThemedText>
+          </View>
+        )}
       </ScrollView>
 
       <View style={styles.inputContainer}>
@@ -83,21 +139,29 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Ask about Indian cow breeds..."
+          placeholder="Ask about Indian cow breeds or anything else..."
           placeholderTextColor="#666"
           multiline
           maxLength={500}
+          editable={!isLoading}
         />
         <TouchableOpacity
-          style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton, 
+            (!inputText.trim() || isLoading) && styles.sendButtonDisabled
+          ]}
           onPress={handleSend}
-          disabled={!inputText.trim()}
+          disabled={!inputText.trim() || isLoading}
         >
-          <Ionicons
-            name="send"
-            size={24}
-            color={inputText.trim() ? '#5D4037' : '#999'}
-          />
+          {isLoading ? (
+            <ActivityIndicator size={24} color="#999" />
+          ) : (
+            <Ionicons
+              name="send"
+              size={24}
+              color={inputText.trim() ? '#5D4037' : '#999'}
+            />
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -129,9 +193,17 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
     backgroundColor: '#8D6E63',
   },
+  loadingMessage: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   messageText: {
     color: '#FFFFFF',
     fontSize: 16,
+  },
+  loadingText: {
+    marginLeft: 8,
+    fontStyle: 'italic',
   },
   inputContainer: {
     flexDirection: 'row',
