@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Location from 'expo-location';
 import * as SMS from 'expo-sms';
 import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 interface SOSConfig {
   name: string;
@@ -111,16 +111,22 @@ export function SOSProvider({ children }: { children: ReactNode }) {
       const { result } = await SMS.sendSMSAsync(recipients, messageBody);
 
       if (result === 'sent') {
-        console.log('SOS message sent successfully!');
+        console.log('SOS message sent successfully (status: sent)!');
          Alert.alert('SOS Sent', 'Emergency message sent to your helpline numbers.');
       } else if (result === 'cancelled') {
          console.log('SOS message cancelled by user.');
       } else if (result === 'unknown'){
-        console.log('SMS status unknown (Android behavior).');
-         Alert.alert('SOS Status', 'Message sent to your phone\'s messaging app. Please check there.');
+        // Handle 'unknown' status, especially on Android
+        console.log('SMS status unknown.');
+        if (Platform.OS === 'android') {
+          Alert.alert('SOS Sent (Status Unknown)', 'Emergency message likely sent. Note: Delivery status cannot be confirmed on Android.');
+        } else {
+          // Generic message for other platforms if 'unknown' occurs (less common)
+          Alert.alert('SOS Status', 'Could not confirm if message was sent.');
+        }
       }
        else {
-        console.error('Failed to send SOS message:', result);
+        console.error('Failed to send SOS message with unexpected status:', result);
         Alert.alert('Error', `Failed to send SOS message. Status: ${result}`);
       }
 
