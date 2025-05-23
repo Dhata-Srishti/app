@@ -1,5 +1,5 @@
 // firebaseConfig.js
-import { initializeApp } from '@firebase/app';
+import { initializeApp } from 'firebase/app';
 import {
     collection,
     doc,
@@ -11,13 +11,13 @@ import {
     setDoc,
     updateDoc,
     where
-} from '@firebase/firestore';
+} from 'firebase/firestore';
 import {
     getDownloadURL,
     getStorage,
     ref,
     uploadBytes
-} from '@firebase/storage';
+} from 'firebase/storage';
 
 // Firebase config details
 const firebaseConfig = {
