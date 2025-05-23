@@ -1,4 +1,5 @@
 import { AppHeader } from '@/components/AppHeader';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { SOSOnboardingModal } from '@/components/SOSOnboardingModal';
 import { TabChatbotButton } from '@/components/TabChatbotButton';
 import { SOSProvider, useSOS } from '@/context/SOSContext';
@@ -13,7 +14,19 @@ function TabContent() {
     <>
       <Tabs
         screenOptions={{
-          header: () => <AppHeader />,
+          header: () => (
+            <AppHeader
+              rightComponent={
+                <LanguageSwitcher
+                  buttonStyle={{
+                    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(93, 64, 55, 0.2)',
+                  }}
+                />
+              }
+            />
+          ),
           tabBarStyle: {
             backgroundColor: '#fff1de',
             borderTopColor: 'rgba(0,0,0,0.1)',

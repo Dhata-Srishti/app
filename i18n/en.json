@@ -1,0 +1,33 @@
+{
+  "language": {
+    "select": "Select Language"
+  },
+  "common": {
+    "loading": "Loading...",
+    "welcome": "Welcome",
+    "user": "User",
+    "language": "Language",
+    "english": "English",
+    "kannada": "ಕನ್ನಡ"
+  },
+  "explore": {
+    "forum": "Forum",
+    "forumDescription": "Know about others opinions, and share yours!",
+    "reportStrayCow": "Report stray cow",
+    "helpHelpless": "Help the helpless",
+    "network": "Network",
+    "networkDescription": "Find Cows near you",
+    "askMooAI": "Ask EMoo AI"
+  },
+  "marketplace": {
+    "title": "Shop",
+    "description": "Find Dairy products, services near you"
+  },
+  "navigation": {
+    "home": "Home",
+    "forum": "Forum",
+    "chat": "Chat",
+    "shop": "Shop",
+    "profile": "Profile"
+  }
+} 
