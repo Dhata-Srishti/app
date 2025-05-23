@@ -1,6 +1,6 @@
 import { ThemedText } from '@/components/ThemedText';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -139,7 +139,7 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
           style={styles.input}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Ask about Indian cow breeds or anything else..."
+          placeholder="What do you want to know today?"
           placeholderTextColor="#666"
           multiline
           maxLength={500}
