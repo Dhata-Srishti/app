@@ -1,3 +1,4 @@
+import { getCurrentLanguage } from '@/lib/i18n';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -12,14 +13,24 @@ export interface Message {
   hasAudio?: boolean;
   kannadaText?: string;
   showKannadaText?: boolean;
+  relatedSection?: string;  // Added for navigation to app sections
 }
 
 const STORAGE_KEY = 'chat_messages';
 const MAX_MESSAGES = 100; // Limit stored messages to prevent excessive storage usage
 
-const DEFAULT_WELCOME_MESSAGE: Message = {
+const DEFAULT_WELCOME_MESSAGE_EN: Message = {
   id: 'welcome',
-  text: "Hello! Welcome to Saathi! Ask me anything about karnataka, it's governance and how you can benifit!",
+  text: "Hello! Welcome! Ask me anything about karnataka, it's governance and how you can benifit!",
+  sender: 'bot',
+  timestamp: Date.now(),
+  hasAudio: false,
+  isGeneratingAudio: false,
+};
+
+const DEFAULT_WELCOME_MESSAGE_KN: Message = {
+  id: 'welcome',
+  text: "ನಮಸ್ಕಾರ! ಸುಸ್ವಾಗತ! ಕರ್ನಾಟಕ, ಅದರ ಆಡಳಿತ ಮತ್ತು ನೀವು ಹೇಗೆ ಪ್ರಯೋಜನ ಪಡೆಯಬಹುದು ಎಂಬುದರ ಬಗ್ಗೆ ನನ್ನನ್ನು ಏನಾದರೂ ಕೇಳಿ!",
   sender: 'bot',
   timestamp: Date.now(),
   hasAudio: false,
@@ -27,6 +38,9 @@ const DEFAULT_WELCOME_MESSAGE: Message = {
 };
 
 export const useChatMessages = () => {
+  const currentLang = getCurrentLanguage();
+  const DEFAULT_WELCOME_MESSAGE = currentLang === 'kn' ? DEFAULT_WELCOME_MESSAGE_KN : DEFAULT_WELCOME_MESSAGE_EN;
+  
   const [messages, setMessages] = useState<Message[]>([DEFAULT_WELCOME_MESSAGE]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,14 +56,18 @@ export const useChatMessages = () => {
         const parsedMessages: Message[] = JSON.parse(storedMessages);
         // Ensure welcome message is always present if no messages exist
         if (parsedMessages.length === 0) {
-          setMessages([DEFAULT_WELCOME_MESSAGE]);
+          const currentLang = getCurrentLanguage();
+          const welcomeMessage = currentLang === 'kn' ? DEFAULT_WELCOME_MESSAGE_KN : DEFAULT_WELCOME_MESSAGE_EN;
+          setMessages([welcomeMessage]);
         } else {
           setMessages(parsedMessages);
         }
       }
     } catch (error) {
       console.error('Failed to load chat messages:', error);
-      setMessages([DEFAULT_WELCOME_MESSAGE]);
+      const currentLang = getCurrentLanguage();
+      const welcomeMessage = currentLang === 'kn' ? DEFAULT_WELCOME_MESSAGE_KN : DEFAULT_WELCOME_MESSAGE_EN;
+      setMessages([welcomeMessage]);
     }
   };
 
@@ -92,7 +110,9 @@ export const useChatMessages = () => {
   const clearMessages = useCallback(async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
-      setMessages([DEFAULT_WELCOME_MESSAGE]);
+      const currentLang = getCurrentLanguage();
+      const welcomeMessage = currentLang === 'kn' ? DEFAULT_WELCOME_MESSAGE_KN : DEFAULT_WELCOME_MESSAGE_EN;
+      setMessages([welcomeMessage]);
     } catch (error) {
       console.error('Failed to clear chat messages:', error);
     }
