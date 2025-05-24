@@ -44,7 +44,7 @@ export default function HomeScreen() {
   const navigateToSection = (section: string) => {
     console.log(`Navigating to ${section}`);
     if (section === 'Nearby') {
-      router.push('/(tabs)/Nearby' as any);
+      router.push('/(tabs)/Nearby');
     } else if (section === 'report') {
       router.push('/(tabs)/stray-cows' as any);
     } else if (section === 'marketplace') {
