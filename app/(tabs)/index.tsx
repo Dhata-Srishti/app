@@ -46,11 +46,13 @@ export default function HomeScreen() {
     if (section === 'Nearby') {
       router.push('/(tabs)/Nearby');
     } else if (section === 'report') {
-      router.push('/(tabs)/stray-cows' as any);
+      router.push('/(tabs)/doc' as any);
     } else if (section === 'marketplace') {
       router.push('/(tabs)/marketplace' as any);
     } else if (section === 'Network') {
       router.push('/(tabs)/network' as any);
+    } else if (section === 'sentiment') {
+      router.push('/(tabs)/sentiment' as any);
     }
   };
 
@@ -135,6 +137,23 @@ export default function HomeScreen() {
                 </View>
                 <Text style={styles.cardTitle}>{t('explore.Network', 'Transport')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.NetworkDescription', 'Find Buses and Routes!')}</Text>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Sentiment Analysis Card */}
+          <TouchableOpacity 
+            style={styles.menuCard}
+            onPress={() => navigateToSection('sentiment')}
+            activeOpacity={0.85}
+          >
+            <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
+              <View style={styles.cardContent}>
+                <View style={styles.iconCircle}>
+                  <Ionicons name="happy-outline" size={36} color={TEAL} />
+                </View>
+                <Text style={styles.cardTitle}>{t('explore.Sentiment', 'Feedback')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.SentimentDescription', 'Share your experience and feedback')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
