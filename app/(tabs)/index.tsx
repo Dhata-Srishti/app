@@ -29,7 +29,7 @@ export default function HomeScreen() {
   const [isChatVisible, setIsChatVisible] = useState(false);
   const { t } = useTranslation();
   const [messages, setMessages] = useState<Message[]>([
-    { text: "Welcome to Moo AI! 🐄 Ask me about Indian cow breeds.\n\n1️⃣ Learn about a breed's origin, history & socio-economic benefits.\n2️⃣ Don't know a breed? I can list all or filter by region.\n3️⃣ No cruelty-related queries allowed.", sender: 'bot' },
+    { text: "Hello! Welcome to Saathi! Ask me anything about karnataka, it's governance and how you can benifit!", sender: 'bot' },
   ]);
   const { sendSOS } = useSOS();
   
@@ -142,7 +142,7 @@ export default function HomeScreen() {
                   <Ionicons name="map-outline" size={36} color={TEAL} />
                 </View>
                 <Text style={styles.cardTitle}>{t('explore.network', 'Network')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.networkDescription', 'Find Cows near you')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.networkDescription', 'Find Buses and Routes!')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
@@ -186,7 +186,7 @@ export default function HomeScreen() {
             <TouchableOpacity onPress={() => setIsChatVisible(false)}>
               <Ionicons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Moo AI</Text>
+            <Text style={styles.headerTitle}>Saathi AI</Text>
             <View style={{ width: 24 }} />
           </View>
           <MooAIChat messages={messages} setMessages={setMessages} isOpen={isChatVisible} />

@@ -154,6 +154,7 @@ func GetBMTCBusRoute(busNumber string) (*BMTCResponse, error) {
 
 // MockBMTCBusRoute returns mock data for BMTC bus routes
 func MockBMTCBusRoute(busNumber string) *BMTCResponse {
+	// Default routes for specific bus numbers - these are used as templates
 	mockRoutes := map[string]BMTCResponse{
 		"500D": {
 			BusNumber: "500D",
@@ -205,6 +206,53 @@ func MockBMTCBusRoute(busNumber string) *BMTCResponse {
 		To:        "Destination Terminal",
 		Stops:     []string{"Stop 1", "Stop 2", "Stop 3", "Stop 4", "Stop 5"},
 	}
+}
+
+// MockBMTCBusRouteWithUserInput returns mock data for BMTC bus routes that matches user input
+func MockBMTCBusRouteWithUserInput(busNumber, userFrom, userTo string) *BMTCResponse {
+	// Get the template route
+	template := MockBMTCBusRoute(busNumber)
+	
+	// If we have user input, try to customize the route
+	if userFrom != "" && userTo != "" {
+		// Create a copy of the template
+		customRoute := &BMTCResponse{
+			BusNumber: busNumber,
+			From:      userFrom,
+			To:        userTo,
+			Stops:     []string{},
+		}
+		
+		// Check if the user's from and to locations are in the template's stops
+		userFromLower := strings.ToLower(userFrom)
+		userToLower := strings.ToLower(userTo)
+		
+		fromIndex := -1
+		toIndex := -1
+		
+		for i, stop := range template.Stops {
+			stopLower := strings.ToLower(stop)
+			// More flexible matching - check if either contains the other
+			if (strings.Contains(stopLower, userFromLower) || strings.Contains(userFromLower, stopLower)) && fromIndex == -1 {
+				fromIndex = i
+			}
+			if (strings.Contains(stopLower, userToLower) || strings.Contains(userToLower, stopLower)) && toIndex == -1 {
+				toIndex = i
+			}
+		}
+		
+		// If we found both locations in the route, extract the relevant portion
+		if fromIndex != -1 && toIndex != -1 && fromIndex < toIndex {
+			customRoute.Stops = template.Stops[fromIndex:toIndex+1]
+			return customRoute
+		}
+		
+		// If we couldn't find exact matches, create a reasonable route
+		customRoute.Stops = []string{userFrom, "Intermediate Stop 1", "Intermediate Stop 2", userTo}
+		return customRoute
+	}
+	
+	return template
 }
 
 // isLocalBus checks if a service is a local bus
@@ -383,14 +431,14 @@ func main() {
 	// Wrap router with CORS
 	handler := c.Handler(r)
 
-	fmt.Println("🚌 Transport Help API Server starting on :8081")
+	fmt.Println("🚌 Transport Help API Server starting on :8083")
 	fmt.Println("Available endpoints:")
 	fmt.Println("  POST /api/transport/search-buses")
 	fmt.Println("  POST /api/transport/bus-route")
 	fmt.Println("  POST /api/transport/bmtc-buses")
 	fmt.Println("  GET  /api/transport/health")
 	
-	log.Fatal(http.ListenAndServe(":8081", handler))
+	log.Fatal(http.ListenAndServe(":8083", handler))
 }
 
 // Health check endpoint
@@ -455,7 +503,7 @@ func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 		buses := make([]map[string]interface{}, 0)
 		
 		for _, busNumber := range busNumbers {
-			route := MockBMTCBusRoute(busNumber)
+			route := MockBMTCBusRouteWithUserInput(busNumber, req.From, req.To)
 			buses = append(buses, map[string]interface{}{
 				"busNumber": busNumber,
 				"from":      route.From,
@@ -585,7 +633,7 @@ func getBMTCBusesHandler(w http.ResponseWriter, r *http.Request) {
 	buses := make([]map[string]interface{}, 0)
 	
 	for _, busNumber := range busNumbers {
-		route := MockBMTCBusRoute(busNumber)
+		route := MockBMTCBusRouteWithUserInput(busNumber, req.From, req.To)
 		buses = append(buses, map[string]interface{}{
 			"busNumber": busNumber,
 			"from":      route.From,

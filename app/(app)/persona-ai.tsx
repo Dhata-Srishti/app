@@ -252,12 +252,12 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
         disabled={isGenerating}
       >
         {isGenerating ? (
-          <ActivityIndicator size={16} color="#FFFFFF" />
+          <ActivityIndicator size={16} color="#2196F3" />
         ) : (
           <Ionicons
             name={isPlaying ? "stop" : "volume-high"}
             size={16}
-            color="#FFFFFF"
+            color="#2196F3"
           />
         )}
       </TouchableOpacity>
@@ -295,7 +295,7 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
                       <Ionicons
                         name={message.showKannadaText ? "eye-off" : "eye"}
                         size={14}
-                        color="#FFFFFF"
+                        color="#4CAF50"
                       />
                     </TouchableOpacity>
                   )}
@@ -345,12 +345,12 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
           disabled={!inputText.trim() || isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator size={24} color="#999" />
+            <ActivityIndicator size={24} color="#FFFFFF" />
           ) : (
             <Ionicons
               name="send"
               size={24}
-              color={inputText.trim() ? '#5D4037' : '#999'}
+              color="#FFFFFF"
             />
           )}
         </TouchableOpacity>
@@ -362,46 +362,64 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#faebd7',
+    backgroundColor: '#f8f9fa',
   },
   messagesContainer: {
     flex: 1,
   },
   messagesContent: {
     padding: 16,
+    paddingBottom: 32,
   },
   messageBubble: {
-    maxWidth: '80%',
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 8,
+    maxWidth: '85%',
+    padding: 16,
+    borderRadius: 20,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   userMessage: {
     alignSelf: 'flex-end',
-    backgroundColor: '#5D4037',
+    backgroundColor: '#2196F3',
+    borderBottomRightRadius: 8,
+    marginLeft: '15%',
   },
   botMessage: {
     alignSelf: 'flex-start',
-    backgroundColor: '#8D6E63',
+    backgroundColor: '#4CAF50',
+    borderBottomLeftRadius: 8,
+    marginRight: '15%',
   },
   loadingMessage: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#FF9800',
   },
   messageContent: {
     flexDirection: 'row',
-    alignItems: 'flex-end',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
   },
   messageText: {
     color: '#FFFFFF',
     fontSize: 16,
+    lineHeight: 22,
     flex: 1,
     marginRight: 8,
+    fontWeight: '500',
   },
   loadingText: {
     marginLeft: 8,
     fontStyle: 'italic',
+    color: '#FFFFFF',
+    fontWeight: '500',
   },
   inputContainer: {
     flexDirection: 'row',
@@ -409,61 +427,83 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
-  },
-  input: {
-    flex: 1,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    marginRight: 8,
-    fontSize: 16,
-    maxHeight: 100,
-  },
-  sendButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonDisabled: {
-    opacity: 0.5,
-  },
-  speakerButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: -2,
     },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  botControls: {
-    flexDirection: 'row',
+  input: {
+    flex: 1,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 25,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginRight: 12,
+    fontSize: 16,
+    maxHeight: 120,
+    borderWidth: 1,
+    borderColor: '#E1E5E9',
+    color: '#2C3E50',
+  },
+  sendButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#2196F3',
+    justifyContent: 'center',
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  kannadaButton: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  sendButtonDisabled: {
+    opacity: 0.5,
+    backgroundColor: '#BDC3C7',
+  },
+  speakerButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+    marginTop: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.5)',
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 3,
+  },
+  botControls: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  kannadaButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -474,18 +514,24 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   kannadaTextContainer: {
-    marginTop: 8,
-    padding: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 8,
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
   },
   kannadaLabel: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#FFFFFF',
+    marginBottom: 4,
+    opacity: 0.9,
   },
   kannadaText: {
     color: '#FFFFFF',
     fontSize: 14,
+    lineHeight: 20,
+    fontWeight: '500',
   },
 }); 
