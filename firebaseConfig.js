@@ -22,13 +22,14 @@ import {
 // Firebase config details
 const firebaseConfig = {
   apiKey: "AIzaSyDck33JzaYxPe595Ye5J2TPE74zKUFA8gU",
+  authDomain: "dhata-f0b61.firebaseapp.com",
   projectId: "dhata-f0b61",
-  storageBucket: "dhata-f0b61.firebasestorage.app",
+  storageBucket: "dhata-f0b61.appspot.com",
   messagingSenderId: "815341000420",
   appId: "1:815341000420:android:f1baa96d4f7115e73f3ef1"
 };
 
-// Initialize Firebase
+// Initialize Firebase with persistence
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const storage = getStorage(app);
@@ -100,10 +101,10 @@ const dbUtils = {
     }
   },
 
-  // Stray cow reports related functions
-  async createStrayCowReport(reportData) {
+  // Document reports related functions
+  async createDocumentReport(reportData) {
     try {
-      const reportRef = doc(collection(db, "strayCowReports"));
+      const reportRef = doc(collection(db, "documentReports"));
       await setDoc(reportRef, {
         ...reportData,
         status: "pending",
@@ -112,18 +113,18 @@ const dbUtils = {
       });
       return reportRef.id;
     } catch (error) {
-      console.error("Error creating stray cow report:", error);
+      console.error("Error creating document report:", error);
       throw error;
     }
   },
 
-  async getStrayCowReports(status = "pending") {
+  async getDocumentReports(status = "pending") {
     try {
-      const reportsQuery = query(collection(db, "strayCowReports"), where("status", "==", status));
+      const reportsQuery = query(collection(db, "documentReports"), where("status", "==", status));
       const snapshot = await getDocs(reportsQuery);
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     } catch (error) {
-      console.error("Error getting stray cow reports:", error);
+      console.error("Error getting document reports:", error);
       throw error;
     }
   },

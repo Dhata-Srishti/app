@@ -5,6 +5,7 @@ import tempfile
 import io
 from dotenv import load_dotenv
 from flask_cors import CORS
+import requests
 
 # Load environment variables from .env file
 load_dotenv()
@@ -433,6 +434,198 @@ def extract_document():
         return jsonify({
             "success": False,
             "error": str(e)
+        }), 500
+
+# Legal QnA proxy endpoints
+@app.route('/api/legal_qna/upload', methods=['POST'])
+def legal_qna_upload():
+    """
+    Proxy endpoint to upload documents to legal_qna service
+    """
+    try:
+        # Use environment variable for legal_qna URL or default to localhost:8080
+        legal_qna_url = os.environ.get('LEGAL_QNA_URL', 'http://localhost:8080')
+        print(f"Proxying upload request to {legal_qna_url}/upload")
+        
+        if 'file' not in request.files:
+            print("No file provided in request")
+            return jsonify({
+                "success": False,
+                "detail": "No file provided"
+            }), 400
+            
+        file = request.files['file']
+        if file.filename == '':
+            print("Empty filename in request")
+            return jsonify({
+                "success": False,
+                "detail": "No file selected"
+            }), 400
+        
+        print(f"Received file: {file.filename}, type: {file.content_type}")
+        
+        # Forward the file to legal_qna service
+        files = {'file': (file.filename, file.read(), file.content_type)}
+        
+        # Make request with timeout
+        response = requests.post(
+            f'{legal_qna_url}/upload', 
+            files=files,
+            timeout=60  # Longer timeout for processing
+        )
+        
+        # Print response status
+        print(f"Legal QnA upload response status: {response.status_code}")
+        
+        # Return the response from legal_qna service
+        try:
+            json_response = response.json()
+            print(f"Legal QnA upload response data: {json_response}")
+            return jsonify(json_response), response.status_code
+        except Exception as json_error:
+            print(f"Error parsing JSON from legal_qna response: {str(json_error)}")
+            return jsonify({
+                "success": False,
+                "detail": f"Invalid response from legal_qna service: {response.text}"
+            }), 500
+            
+    except requests.exceptions.ConnectionError as conn_error:
+        error_msg = f"Connection error to legal_qna service: {str(conn_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 503  # Service Unavailable
+    except requests.exceptions.Timeout as timeout_error:
+        error_msg = f"Timeout error to legal_qna service: {str(timeout_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 504  # Gateway Timeout
+    except Exception as e:
+        error_msg = f"Error proxying to legal_qna service: {str(e)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 500
+
+@app.route('/api/legal_qna/ask', methods=['POST'])
+def legal_qna_ask():
+    """
+    Proxy endpoint to ask questions to legal_qna service
+    """
+    try:
+        # Use environment variable for legal_qna URL or default to localhost:8080
+        legal_qna_url = os.environ.get('LEGAL_QNA_URL', 'http://localhost:8080')
+        print(f"Proxying question request to {legal_qna_url}/ask")
+        
+        data = request.json
+        if not data or 'question' not in data:
+            print("No question provided in request")
+            return jsonify({
+                "success": False,
+                "detail": "No question provided"
+            }), 400
+        
+        print(f"Received question: {data['question']}")
+        
+        # Forward the question to legal_qna service
+        response = requests.post(
+            f'{legal_qna_url}/ask', 
+            json=data,
+            timeout=30
+        )
+        
+        # Print response status
+        print(f"Legal QnA ask response status: {response.status_code}")
+        
+        # Return the response from legal_qna service
+        try:
+            json_response = response.json()
+            print(f"Legal QnA ask response data: {json_response}")
+            return jsonify(json_response), response.status_code
+        except Exception as json_error:
+            print(f"Error parsing JSON from legal_qna response: {str(json_error)}")
+            return jsonify({
+                "success": False,
+                "detail": f"Invalid response from legal_qna service: {response.text}"
+            }), 500
+            
+    except requests.exceptions.ConnectionError as conn_error:
+        error_msg = f"Connection error to legal_qna service: {str(conn_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 503  # Service Unavailable
+    except requests.exceptions.Timeout as timeout_error:
+        error_msg = f"Timeout error to legal_qna service: {str(timeout_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 504  # Gateway Timeout
+    except Exception as e:
+        error_msg = f"Error proxying to legal_qna service: {str(e)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 500
+
+@app.route('/api/legal_qna/load-test-file', methods=['GET'])
+def legal_qna_load_test():
+    """
+    Proxy endpoint to load test file in legal_qna service
+    """
+    try:
+        # Use environment variable for legal_qna URL or default to localhost:8080
+        legal_qna_url = os.environ.get('LEGAL_QNA_URL', 'http://localhost:8080')
+        print(f"Proxying load-test-file request to {legal_qna_url}/load-test-file")
+        
+        # Forward the request to legal_qna service
+        response = requests.get(
+            f'{legal_qna_url}/load-test-file',
+            timeout=30
+        )
+        
+        # Print response status
+        print(f"Legal QnA load-test-file response status: {response.status_code}")
+        
+        # Return the response from legal_qna service
+        try:
+            json_response = response.json()
+            print(f"Legal QnA load-test-file response data: {json_response}")
+            return jsonify(json_response), response.status_code
+        except Exception as json_error:
+            print(f"Error parsing JSON from legal_qna response: {str(json_error)}")
+            return jsonify({
+                "success": False,
+                "detail": f"Invalid response from legal_qna service: {response.text}"
+            }), 500
+            
+    except requests.exceptions.ConnectionError as conn_error:
+        error_msg = f"Connection error to legal_qna service: {str(conn_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 503  # Service Unavailable
+    except requests.exceptions.Timeout as timeout_error:
+        error_msg = f"Timeout error to legal_qna service: {str(timeout_error)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
+        }), 504  # Gateway Timeout
+    except Exception as e:
+        error_msg = f"Error proxying to legal_qna service: {str(e)}"
+        print(error_msg)
+        return jsonify({
+            "success": False,
+            "detail": error_msg
         }), 500
 
 # Legacy endpoints for backward compatibility

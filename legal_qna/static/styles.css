@@ -1,0 +1,84 @@
+body {
+    background-color: #fffaf0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.container {
+    max-width: 900px;
+}
+
+.card {
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 20px;
+}
+
+h1 {
+    font-size: 28px;
+    margin-bottom: 0;
+}
+
+h2 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.context-box {
+    max-height: 300px;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    white-space: pre-wrap;
+}
+
+#answer {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #007bff;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Example for nav/tabs */
+.nav, .tabs, .tab, .card-header, .navbar, .tab-header {
+    background-color: #60b9b9 !important;
+    color: #fff !important;
+}
+
+/* If you have specific tab classes, add them here */
+.tab.active, .nav-link.active {
+    background-color: #60b9b9 !important;
+    color: #fff !important;
+    border-bottom: 2px solid #fffaf0;
+}
+
+/* Optional: make buttons match the theme */
+.btn-primary {
+    background-color: #60b9b9;
+    border-color: #60b9b9;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: #4da3a3;
+    border-color: #4da3a3;
+}

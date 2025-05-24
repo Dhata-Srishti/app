@@ -212,7 +212,7 @@ func MockBMTCBusRoute(busNumber string) *BMTCResponse {
 func MockBMTCBusRouteWithUserInput(busNumber, userFrom, userTo string) *BMTCResponse {
 	// Get the template route
 	template := MockBMTCBusRoute(busNumber)
-	
+
 	// If we have user input, try to customize the route
 	if userFrom != "" && userTo != "" {
 		// Create a copy of the template
@@ -222,14 +222,14 @@ func MockBMTCBusRouteWithUserInput(busNumber, userFrom, userTo string) *BMTCResp
 			To:        userTo,
 			Stops:     []string{},
 		}
-		
+
 		// Check if the user's from and to locations are in the template's stops
 		userFromLower := strings.ToLower(userFrom)
 		userToLower := strings.ToLower(userTo)
-		
+
 		fromIndex := -1
 		toIndex := -1
-		
+
 		for i, stop := range template.Stops {
 			stopLower := strings.ToLower(stop)
 			// More flexible matching - check if either contains the other
@@ -240,18 +240,18 @@ func MockBMTCBusRouteWithUserInput(busNumber, userFrom, userTo string) *BMTCResp
 				toIndex = i
 			}
 		}
-		
+
 		// If we found both locations in the route, extract the relevant portion
 		if fromIndex != -1 && toIndex != -1 && fromIndex < toIndex {
-			customRoute.Stops = template.Stops[fromIndex:toIndex+1]
+			customRoute.Stops = template.Stops[fromIndex : toIndex+1]
 			return customRoute
 		}
-		
+
 		// If we couldn't find exact matches, create a reasonable route
 		customRoute.Stops = []string{userFrom, "Intermediate Stop 1", "Intermediate Stop 2", userTo}
 		return customRoute
 	}
-	
+
 	return template
 }
 
@@ -259,19 +259,19 @@ func MockBMTCBusRouteWithUserInput(busNumber, userFrom, userTo string) *BMTCResp
 func isLocalBus(svc Service) bool {
 	busType := strings.ToUpper(svc.BusType)
 	serviceName := strings.ToUpper(svc.ServiceName)
-	
+
 	// Check for common local bus indicators
 	localIndicators := []string{
 		"ORDINARY", "SARIGE", "LOCAL", "REGULAR",
 		"NON-AC", "PUSH BACK", "CITY", "TOWN",
 	}
-	
+
 	for _, indicator := range localIndicators {
 		if strings.Contains(busType, indicator) || strings.Contains(serviceName, indicator) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -280,34 +280,34 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 	// Normalize location names
 	fromLower := strings.ToLower(from)
 	toLower := strings.ToLower(to)
-	
+
 	// Common bus routes in Bangalore
 	routes := map[string][]string{
-		"mg road": {"500D", "500C", "401K", "201", "330E", "500A"},
-		"majestic": {"500C", "401K", "330E", "500A", "201", "500K"},
-		"silk board": {"500D", "335E", "335P", "201A", "500K"},
-		"hebbal": {"500D", "500C", "500A", "500K"},
-		"whitefield": {"401K", "500P", "335E", "G4"},
+		"mg road":         {"500D", "500C", "401K", "201", "330E", "500A"},
+		"majestic":        {"500C", "401K", "330E", "500A", "201", "500K"},
+		"silk board":      {"500D", "335E", "335P", "201A", "500K"},
+		"hebbal":          {"500D", "500C", "500A", "500K"},
+		"whitefield":      {"401K", "500P", "335E", "G4"},
 		"electronic city": {"335E", "335P", "500D", "500K"},
-		"jayanagar": {"201", "201A", "500C", "500K"},
-		"indiranagar": {"401K", "500P", "G4", "201"},
-		"marathahalli": {"401K", "500P", "G4", "330E"},
-		"btm layout": {"335E", "335P", "201A", "500D"},
-		"koramangala": {"335E", "201A", "500P", "G4"},
-		"hsr layout": {"335E", "335P", "201A"},
-		"jp nagar": {"201", "201A", "500C"},
-		"banashankari": {"500C", "201", "201A"},
-		"yelahanka": {"500A", "500K", "KIA"},
+		"jayanagar":       {"201", "201A", "500C", "500K"},
+		"indiranagar":     {"401K", "500P", "G4", "201"},
+		"marathahalli":    {"401K", "500P", "G4", "330E"},
+		"btm layout":      {"335E", "335P", "201A", "500D"},
+		"koramangala":     {"335E", "201A", "500P", "G4"},
+		"hsr layout":      {"335E", "335P", "201A"},
+		"jp nagar":        {"201", "201A", "500C"},
+		"banashankari":    {"500C", "201", "201A"},
+		"yelahanka":       {"500A", "500K", "KIA"},
 	}
-	
+
 	// Get buses for both locations
 	fromBuses := routes[fromLower]
 	toBuses := routes[toLower]
-	
+
 	// Find common buses
 	busNumbers := []string{}
 	busMap := make(map[string]bool)
-	
+
 	// Add buses that serve both locations
 	if fromBuses != nil && toBuses != nil {
 		for _, bus := range fromBuses {
@@ -319,7 +319,7 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 			}
 		}
 	}
-	
+
 	// If no common buses found, try to find buses that connect through major hubs
 	if len(busNumbers) == 0 {
 		majorHubs := []string{"majestic", "mg road", "silk board"}
@@ -329,7 +329,7 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 				// Check if both locations connect to this hub
 				fromConnects := false
 				toConnects := false
-				
+
 				if fromBuses != nil {
 					for _, bus := range fromBuses {
 						for _, hubBus := range hubBuses {
@@ -340,7 +340,7 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 						}
 					}
 				}
-				
+
 				if toBuses != nil {
 					for _, bus := range toBuses {
 						for _, hubBus := range hubBuses {
@@ -351,7 +351,7 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 						}
 					}
 				}
-				
+
 				if fromConnects && toConnects {
 					// Add connecting buses through this hub
 					for _, bus := range hubBuses {
@@ -364,12 +364,12 @@ func GetBMTCBusesBetweenLocations(from, to string) []string {
 			}
 		}
 	}
-	
+
 	// If still no routes found, return a few common buses as fallback
 	if len(busNumbers) == 0 {
 		busNumbers = []string{"500D", "500C", "500K"}
 	}
-	
+
 	return busNumbers
 }
 
@@ -405,7 +405,7 @@ func (c *Client) MockGetAvailableServices(from, to, date string) *SearchResponse
 			Rating:         "3.5/5",
 		},
 	}
-	
+
 	return &SearchResponse{Services: services}
 }
 
@@ -414,7 +414,7 @@ func main() {
 
 	// API routes
 	api := r.PathPrefix("/api/transport").Subrouter()
-	
+
 	// CORS middleware
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
@@ -431,14 +431,14 @@ func main() {
 	// Wrap router with CORS
 	handler := c.Handler(r)
 
-	fmt.Println("🚌 Transport Help API Server starting on :8083")
+	fmt.Println("🚌 Transport Help API Server starting on :8087")
 	fmt.Println("Available endpoints:")
 	fmt.Println("  POST /api/transport/search-buses")
 	fmt.Println("  POST /api/transport/bus-route")
 	fmt.Println("  POST /api/transport/bmtc-buses")
 	fmt.Println("  GET  /api/transport/health")
-	
-	log.Fatal(http.ListenAndServe(":8083", handler))
+
+	log.Fatal(http.ListenAndServe(":8087", handler))
 }
 
 // Health check endpoint
@@ -457,7 +457,7 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 // Search buses endpoint (KSRTC for intercity, BMTC for local)
 func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	if r.Method == "OPTIONS" {
 		return
 	}
@@ -501,7 +501,7 @@ func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 		// Use BMTC service
 		busNumbers := GetBMTCBusesBetweenLocations(req.From, req.To)
 		buses := make([]map[string]interface{}, 0)
-		
+
 		for _, busNumber := range busNumbers {
 			route := MockBMTCBusRouteWithUserInput(busNumber, req.From, req.To)
 			buses = append(buses, map[string]interface{}{
@@ -525,7 +525,7 @@ func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		// Use KSRTC service for intercity travel
 		client := NewClient()
-		
+
 		// Format date
 		date := req.Date
 		if date == "" {
@@ -540,13 +540,13 @@ func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 
 		// Categorize buses
 		response := map[string]interface{}{
-			"serviceType": "KSRTC",
-			"from":        req.From,
-			"to":          req.To,
-			"date":        date,
-			"luxuryBuses": []Service{},
+			"serviceType":  "KSRTC",
+			"from":         req.From,
+			"to":           req.To,
+			"date":         date,
+			"luxuryBuses":  []Service{},
 			"expressBuses": []Service{},
-			"localBuses": []Service{},
+			"localBuses":   []Service{},
 		}
 
 		for _, svc := range results.Services {
@@ -570,7 +570,7 @@ func searchBusesHandler(w http.ResponseWriter, r *http.Request) {
 // Get bus route endpoint
 func getBusRouteHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	if r.Method == "OPTIONS" {
 		return
 	}
@@ -607,7 +607,7 @@ func getBusRouteHandler(w http.ResponseWriter, r *http.Request) {
 // Get BMTC buses between locations endpoint
 func getBMTCBusesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	
+
 	if r.Method == "OPTIONS" {
 		return
 	}
@@ -631,7 +631,7 @@ func getBMTCBusesHandler(w http.ResponseWriter, r *http.Request) {
 
 	busNumbers := GetBMTCBusesBetweenLocations(req.From, req.To)
 	buses := make([]map[string]interface{}, 0)
-	
+
 	for _, busNumber := range busNumbers {
 		route := MockBMTCBusRouteWithUserInput(busNumber, req.From, req.To)
 		buses = append(buses, map[string]interface{}{
@@ -650,4 +650,4 @@ func getBMTCBusesHandler(w http.ResponseWriter, r *http.Request) {
 			"to":    req.To,
 		},
 	})
-} 
+}

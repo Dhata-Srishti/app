@@ -1,0 +1,6 @@
+flask==2.0.1
+werkzeug==2.0.1
+PyPDF2==3.0.1
+# Optional dependencies for better functionality
+# pytesseract==0.3.10
+# Pillow==9.4.0

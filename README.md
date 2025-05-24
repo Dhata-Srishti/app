@@ -166,3 +166,55 @@ This project was created with [`create-expo-app`](https://www.npmjs.com/package/
 
 - [Expo on GitHub](https://github.com/expo/expo)
 - [Discord community](https://chat.expo.dev)
+
+# App with Sentiment Analysis Feedback
+
+This app includes a feedback form with sentiment analysis capabilities that analyzes user feedback and stores the results in Firebase Firestore.
+
+## Sentiment Analysis Feature Setup
+
+To enable the sentiment analysis feedback feature, you need to set up Firebase:
+
+1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
+2. Enable Firestore database in your Firebase project
+3. Set up Firebase authentication if you want to track user feedback
+
+### Environment Variables
+
+Create a `.env` file in the root of your project with the following variables:
+
+```
+EXPO_PUBLIC_FIREBASE_API_KEY=your_api_key
+//EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+EXPO_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+EXPO_PUBLIC_FIREBASE_APP_ID=your_app_id
+```
+
+Replace the values with your actual Firebase project details.
+
+## Features
+
+The sentiment analysis feedback feature includes:
+
+1. A feedback form where users can:
+   - Rate their experience (1-5 stars)
+   - Provide detailed feedback
+   - See real-time sentiment analysis of their feedback
+
+2. A feedback results tab where:
+   - All submitted feedback is displayed
+   - Sentiment analysis results are shown
+   - User ratings are visible
+   
+## How It Works
+
+The app analyzes the sentiment of user feedback using a simple algorithm that:
+1. Counts positive and negative words in the feedback
+2. Calculates a sentiment score between 0-1
+3. Categorizes the sentiment as positive, neutral, or negative
+4. Stores the feedback, rating, and sentiment analysis in Firestore
+5. Increments a satisfaction score by +1 for each positive feedback
+
+In a production environment, you might want to replace the simple sentiment analysis with a more sophisticated NLP API.
