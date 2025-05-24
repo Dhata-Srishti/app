@@ -50,7 +50,7 @@ export default function HomeScreen() {
     } else if (section === 'marketplace') {
       router.push('/(tabs)/marketplace' as any);
     } else if (section === 'Network') {
-      router.push('/(tabs)/Network' as any);
+      router.push('/(tabs)/network' as any);
     }
   };
 
@@ -131,9 +131,9 @@ export default function HomeScreen() {
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="map-outline" size={36} color={TEAL} />
+                  <Ionicons name="bus-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.Network', 'Network')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.Network', 'Transport')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.NetworkDescription', 'Find Buses and Routes!')}</Text>
               </View>
             </LinearGradient>

@@ -2,14 +2,14 @@
 
 echo "🛑 Stopping Dhata Backend Services..."
 
-# Kill processes using port 8081 (Go transport server)
-echo "Stopping Go Transport Server (port 8081)..."
-GO_PIDS=$(lsof -ti:8081)
+# Kill processes using port 8083 (Go transport server)
+echo "Stopping Go Transport Server (port 8083)..."
+GO_PIDS=$(lsof -ti:8083)
 if [ ! -z "$GO_PIDS" ]; then
     echo $GO_PIDS | xargs kill -9
-    echo "✅ Go Transport Server stopped"
+    echo "✅ Stopped Go Transport Server"
 else
-    echo "ℹ️  No process found on port 8081"
+    echo "ℹ️  No process found on port 8083"
 fi
 
 # Kill processes using port 5000 (Python Flask server)

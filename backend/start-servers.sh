@@ -22,7 +22,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Start the Go transport server
-echo "🚌 Starting Transport Help API Server (Go) on port 8081..."
+echo "🚌 Starting Transport Help API Server (Go) on port 8083..."
 cd "$(dirname "$0")"
 
 # Initialize Go modules if needed
@@ -81,7 +81,7 @@ echo ""
 echo "🎉 All services are running!"
 echo "📍 Available APIs:"
 echo "   • Python Flask API: http://localhost:5000"
-echo "   • Transport Help API: http://localhost:8081/api/transport"
+echo "   • Transport Help API: http://localhost:8083/api/transport"
 echo ""
 echo "🚌 Transport Help Endpoints:"
 echo "   • POST /api/transport/search-buses"

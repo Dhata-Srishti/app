@@ -14,7 +14,7 @@ The Transport Help feature has been integrated as a new "Network" tab in the Dha
 
 ### Backend (Go)
 - **File**: `backend/transport-server.go`
-- **Port**: 8081
+- **Port**: 8083
 - **Framework**: Gorilla Mux with CORS support
 - **Features**:
   - KSRTC API integration for intercity buses
@@ -47,7 +47,7 @@ cd backend
 
 This will start both:
 - Python Flask server on port 5000
-- Go Transport server on port 8081
+- Go Transport server on port 8083
 
 #### Option 2: Start Go server manually
 ```bash
@@ -62,7 +62,7 @@ cd backend
 ./stop-servers.sh
 ```
 
-This will stop both servers and free up ports 5000 and 8081.
+This will stop both servers and free up ports 5000 and 8083.
 
 ### API Endpoints
 
@@ -140,7 +140,7 @@ Comprehensive mock data ensures the app works even when external APIs are unavai
 ### API Base URL
 The frontend is configured to connect to the Go backend at:
 ```typescript
-const API_BASE_URL = 'http://localhost:8081/api/transport';
+const API_BASE_URL = 'http://localhost:8083/api/transport';
 ```
 
 For production, update this to your deployed Go server URL.
@@ -202,15 +202,15 @@ The frontend uses the same color scheme as the main app:
 ### Test the Go Server
 ```bash
 # Health check
-curl http://localhost:8081/api/transport/health
+curl http://localhost:8083/api/transport/health
 
 # Search buses
-curl -X POST http://localhost:8081/api/transport/search-buses \
+curl -X POST http://localhost:8083/api/transport/search-buses \
   -H "Content-Type: application/json" \
   -d '{"from":"MG Road","to":"Silk Board"}'
 
 # Get bus route
-curl -X POST http://localhost:8081/api/transport/bus-route \
+curl -X POST http://localhost:8083/api/transport/bus-route \
   -H "Content-Type: application/json" \
   -d '{"busNumber":"500D"}'
 ```
@@ -221,7 +221,7 @@ curl -X POST http://localhost:8081/api/transport/bus-route \
 
 1. **Port already in use error**
    ```
-   listen tcp :8081: bind: address already in use
+   listen tcp :8083: bind: address already in use
    ```
    **Solution**: Use the stop script to kill existing processes:
    ```bash
@@ -233,17 +233,17 @@ curl -X POST http://localhost:8081/api/transport/bus-route \
    **Alternative manual fix**:
    ```bash
    # Find and kill processes using the ports
-   lsof -ti:8081 | xargs kill -9  # Kill Go server
+   lsof -ti:8083 | xargs kill -9  # Kill Go server
    lsof -ti:5000 | xargs kill -9  # Kill Python server
    ```
 
 2. **Go server won't start**
    - Check if Go is installed: `go version`
-   - Ensure port 8081 is available
+   - Ensure port 8083 is available
    - Check for compilation errors: `go build transport-server.go`
 
 3. **Frontend can't connect to backend**
-   - Verify Go server is running on port 8081
+   - Verify Go server is running on port 8083
    - Check Network connectivity
    - Ensure CORS is properly configured
 
@@ -269,10 +269,10 @@ cd backend
 **Check server status**:
 ```bash
 # Check Go server
-curl http://localhost:8081/api/transport/health
+curl http://localhost:8083/api/transport/health
 
 # Check if ports are in use
-lsof -i:8081  # Go server
+lsof -i:8083  # Go server
 lsof -i:5000  # Python server
 ```
 
