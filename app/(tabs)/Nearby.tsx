@@ -1,9 +1,9 @@
 import { ThemedView } from '@/components/ThemedView';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FlatList, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import { MapParams } from '../../lib/nearby/mcp_maps_server';
@@ -23,11 +23,6 @@ const NEARBY_CATEGORIES = [
   { id: 'hotel', name: 'Hotels', icon: 'bed-outline' },
 ];
 
-interface Message {
-  role: string;
-  text: string;
-}
-
 interface Category {
   id: string;
   name: string;
@@ -39,40 +34,20 @@ export default function NearbyScreen() {
   const router = useRouter();
   const [mapParams, setMapParams] = useState<MapParams>({ location: 'Current Location' });
   const [searchQuery, setSearchQuery] = useState('');
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
-
-  // Initialize the map server
+  const [isSearching, setIsSearching] = useState(false);
+  
+  // Initialize the map
   useEffect(() => {
-    const initializeMap = async () => {
-      try {
-        // Mock function to simulate MCP server
-        // In a real implementation, this would use the MCP SDK
-        const mockMapQueryHandler = (params: MapParams) => {
-          setMapParams(params);
-        };
-
-        // Simulate MCP server with local function
-        mockMapQueryHandler({ location: 'Current Location' });
-      } catch (error) {
-        console.error("Error initializing map:", error);
-      }
-    };
-
-    initializeMap();
+    // Set initial location
+    setMapParams({ location: 'Current Location' });
   }, []);
 
   // Function to search for nearby places
   const searchNearby = async (query: string) => {
-    setIsGenerating(true);
+    setIsSearching(true);
     
     try {
-      // Add user message to chat
-      setMessages(prev => [...prev, { role: 'user', text: query }]);
-      
       // Update map parameters based on query
-      // This is a simple implementation - in a full version this would use AI
       if (query.includes('restaurant') || query.includes('food')) {
         setMapParams({ search: 'restaurants near me' });
       } else if (query.includes('hospital') || query.includes('medical')) {
@@ -96,29 +71,16 @@ export default function NearbyScreen() {
         // Default search
         setMapParams({ search: query });
       }
-      
-      // Add AI response to chat
-      const responseText = `I've found some results for "${query}" and updated the map for you.`;
-      setMessages(prev => [...prev, { role: 'assistant', text: responseText }]);
-      
-      // Scroll to bottom of chat
-      setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
-      }, 100);
     } catch (error: any) {
       console.error("Error searching nearby:", error);
-      setMessages(prev => [...prev, { 
-        role: 'error', 
-        text: `Error: ${error.message || 'Something went wrong'}` 
-      }]);
     } finally {
-      setIsGenerating(false);
+      setIsSearching(false);
     }
   };
 
   // Function to handle category selection
   const handleCategorySelect = (category: Category) => {
-    searchNearby(`Find nearby ${category.name} around my current location`);
+    searchNearby(`Find nearby ${category.name}`);
   };
 
   // Function to handle search query submission
@@ -195,18 +157,6 @@ export default function NearbyScreen() {
           <View style={{ width: 24 }} />
         </View>
 
-        {/* Map Container */}
-        <View style={styles.mapContainer}>
-          <WebView
-            source={{ html: getMapHTML() }}
-            style={styles.map}
-            javaScriptEnabled={true}
-            domStorageEnabled={true}
-            originWhitelist={['*']}
-            onError={(error) => console.error('WebView error:', error)}
-          />
-        </View>
-
         {/* Categories */}
         <View style={styles.categoriesContainer}>
           <FlatList
@@ -238,35 +188,30 @@ export default function NearbyScreen() {
             onChangeText={setSearchQuery}
             onSubmitEditing={handleSearch}
           />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Ionicons name="search" size={24} color="#fff" />
+          <TouchableOpacity 
+            style={styles.searchButton} 
+            onPress={handleSearch}
+            disabled={isSearching}
+          >
+            <Ionicons 
+              name={isSearching ? "hourglass-outline" : "search"} 
+              size={24} 
+              color="#fff" 
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Chat Messages */}
-        <ScrollView 
-          style={styles.chatContainer}
-          ref={scrollViewRef}
-          contentContainerStyle={styles.chatContent}
-        >
-          {messages.map((msg, index) => (
-            <View 
-              key={index} 
-              style={[
-                styles.messageContainer, 
-                msg.role === 'user' ? styles.userMessage : styles.aiMessage,
-                msg.role === 'error' && styles.errorMessage
-              ]}
-            >
-              <Text style={styles.messageText}>{msg.text}</Text>
-            </View>
-          ))}
-          {isGenerating && (
-            <View style={[styles.messageContainer, styles.aiMessage]}>
-              <Text style={styles.messageText}>Thinking...</Text>
-            </View>
-          )}
-        </ScrollView>
+        {/* Map Container */}
+        <View style={styles.mapContainer}>
+          <WebView
+            source={{ html: getMapHTML() }}
+            style={styles.map}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            originWhitelist={['*']}
+            onError={(error) => console.error('WebView error:', error)}
+          />
+        </View>
       </SafeAreaView>
     </ThemedView>
   );
@@ -298,10 +243,10 @@ const styles = StyleSheet.create({
     color: '#5D4037',
   },
   mapContainer: {
-    height: '40%',
+    flex: 1, // Take up all remaining space
     width: '100%',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
   map: {
     flex: 1,
@@ -359,35 +304,5 @@ const styles = StyleSheet.create({
     backgroundColor: TEAL,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  chatContainer: {
-    flex: 1,
-  },
-  chatContent: {
-    padding: 16,
-  },
-  messageContainer: {
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 8,
-    maxWidth: '80%',
-  },
-  userMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: TEAL,
-  },
-  aiMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-  errorMessage: {
-    backgroundColor: '#FFE0E0',
-    borderColor: '#FF9999',
-  },
-  messageText: {
-    fontSize: 14,
-    color: DARK,
   },
 }); 

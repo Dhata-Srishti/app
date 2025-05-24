@@ -31,10 +31,11 @@ interface Scheme {
   applicationProcess: string;
   requiredDocuments: string[];
   icon: string;
-  category: 'education' | 'health' | 'agriculture' | 'employment' | 'housing' | 'social';
+  category: 'education' | 'health' | 'agriculture' | 'employment' | 'housing' | 'social' | 'women_empowerment' | 'food_security' | 'transport' | 'skill_development_entrepreneurship' | 'utilities' | 'social_welfare' | 'agriculture_environment' | 'environment' | 'financial_inclusion';
   ageRange?: { min: number; max: number };
   genderEligible?: ('male' | 'female' | 'all')[];
   occupationEligible?: string[];
+  casteEligible?: ('SC' | 'ST' | 'OBC' | 'General' | 'all')[];
   incomeLimit?: number;
 }
 
@@ -42,6 +43,7 @@ interface UserProfile {
   age: string;
   gender: string;
   occupation: string;
+  caste: string;
 }
 
 const GOVERNMENT_SCHEMES: Scheme[] = [
@@ -58,6 +60,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 0, max: 100 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['farmer', 'laborer', 'unemployed', 'student', 'other'],
+    casteEligible: ['all'],
     incomeLimit: 250000
   },
   {
@@ -73,6 +76,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 18, max: 100 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['farmer'],
+    casteEligible: ['all'],
     incomeLimit: 1000000
   },
   {
@@ -88,6 +92,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 21, max: 70 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['laborer', 'unemployed', 'other', 'employed'],
+    casteEligible: ['all'],
     incomeLimit: 1800000
   },
   {
@@ -103,6 +108,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 18, max: 65 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['laborer', 'unemployed', 'farmer'],
+    casteEligible: ['all'],
     incomeLimit: 500000
   },
   {
@@ -118,6 +124,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 0, max: 18 },
     genderEligible: ['female'],
     occupationEligible: ['student'],
+    casteEligible: ['all'],
     incomeLimit: 800000
   },
   {
@@ -133,6 +140,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 18, max: 65 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['business', 'self-employed', 'entrepreneur'],
+    casteEligible: ['all'],
     incomeLimit: 2000000
   },
   {
@@ -148,6 +156,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 16, max: 30 },
     genderEligible: ['male', 'female', 'all'],
     occupationEligible: ['student'],
+    casteEligible: ['all'],
     incomeLimit: 600000
   },
   {
@@ -163,6 +172,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
     ageRange: { min: 19, max: 45 },
     genderEligible: ['female'],
     occupationEligible: ['all'],
+    casteEligible: ['all'],
     incomeLimit: 1000000
   },
     {
@@ -183,6 +193,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -204,6 +215,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['female'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // Eligibility based on family type (Antyodaya, BPL, APL)
     },
     {
@@ -223,6 +235,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 19, max: 100 }, // Original criteria minAge: 19
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // Eligibility based on BPL/AAY card
     },
     {
@@ -242,6 +255,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 6, max: 100 },
       genderEligible: ['female'], // Includes transgender women
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -264,6 +278,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 40 },
       genderEligible: ['all'],
       occupationEligible: ['unemployed_graduate', 'unemployed_diploma_holder'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -285,6 +300,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 22, max: 100 }, // Original criteria minAge: 22
       genderEligible: ['all'],
       occupationEligible: ['rural_youth', 'driver'],
+      casteEligible: ['all'],
       incomeLimit: 500000
     },
     {
@@ -304,6 +320,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically adult entrepreneurs
       genderEligible: ['all'],
       occupationEligible: ['entrepreneur', 'startup_founder'],
+      casteEligible: ['all'],
       incomeLimit: null // May vary by sub-component or focus group
     },
     {
@@ -326,6 +343,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 35 }, // UG up to 21, PG/PhD up to 35
       genderEligible: ['all'],
       occupationEligible: ['student'],
+      casteEligible: ['all'],
       incomeLimit: 800000 // For 100% aid, income-based otherwise
     },
     {
@@ -345,6 +363,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Legal marriage ages apply (Bride >=18, Groom >=21)
       genderEligible: ['all'], // Applicable to the couple
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -365,6 +384,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 }, // Reproductive age
       genderEligible: ['female'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // BPL criteria implies income limit
     },
     {
@@ -384,6 +404,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 }, // Reproductive age
       genderEligible: ['female'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // BPL/SC/ST criteria implies income considerations
     },
     {
@@ -403,6 +424,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Mothers of reproductive age for kit; general rural population for skill aspects
       genderEligible: ['all'], // Kit for mothers; broader program for rural communities
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // BPL/SC/ST criteria for kit in some cases
     },
     {
@@ -424,6 +446,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 18 },
       genderEligible: ['female'],
       occupationEligible: ['student'], // Implied for girl child
+      casteEligible: ['all'],
       incomeLimit: null // BPL criteria implies income limit
     },
     {
@@ -442,6 +465,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 }, // Reproductive age
       genderEligible: ['female'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // BPL criteria implies income limit
     },
     {
@@ -461,6 +485,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Landowners of any age
       genderEligible: ['all'],
       occupationEligible: ['farmer', 'all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -481,6 +506,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 60 }, // Refers to active work period for eligibility; pension is post-60
       genderEligible: ['all'],
       occupationEligible: ['construction_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -500,6 +526,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Legal marriage ages apply for couple
       genderEligible: ['all'],
       occupationEligible: ['construction_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -518,6 +545,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['construction_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -536,6 +564,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['construction_worker', 'dependent_of_construction_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -554,6 +583,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['construction_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -576,6 +606,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 55 },
       genderEligible: ['all'],
       occupationEligible: ['entrepreneur', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: 350000
     },
     {
@@ -594,6 +625,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically working age
       genderEligible: ['all'],
       occupationEligible: ['artisan', 'scheduled_caste_member'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -613,6 +645,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically 18-55 for loan eligibility
       genderEligible: ['female'],
       occupationEligible: ['entrepreneur'],
+      casteEligible: ['all'],
       incomeLimit: null // Varies, e.g. 150000 for some subsidies, or 200000 for SC/ST interest-free
     },
     {
@@ -632,6 +665,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Student age
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: null // Varies, e.g. 800000 for some courses
     },
     {
@@ -650,6 +684,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['rural_household_member', 'unskilled_manual_worker'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -669,6 +704,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'], // Based on housing need
+      casteEligible: ['all'], // Based on SECC deprivation criteria
       incomeLimit: null // Based on SECC deprivation criteria
     },
     {
@@ -687,6 +723,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically adult members
       genderEligible: ['female', 'all'], // Strong focus on women
       occupationEligible: ['rural_poor', 'shg_member'],
+      casteEligible: ['all'],
       incomeLimit: null // Targets poor households
     },
     {
@@ -706,6 +743,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 40 }, // Entry age
       genderEligible: ['all'],
       occupationEligible: ['all'], // Primarily for unorganized sector
+      casteEligible: ['all'],
       incomeLimit: null // Exclusion for income tax payers from Oct 2022
     },
     {
@@ -726,6 +764,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 19, max: 100 }, // Original criteria minAge: 19
       genderEligible: ['female', 'all'], // Specifically targets SC/ST and Women
       occupationEligible: ['entrepreneur', 'scheduled_caste_member', 'scheduled_tribe_member'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -744,6 +783,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Minors above 10 can open accounts
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -762,6 +802,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Farmer family head
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null // Exclusion criteria based on economic status, not direct income limit
     },
     {
@@ -781,6 +822,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'], // Based on SECC criteria
+      casteEligible: ['all'],
       incomeLimit: null // Based on SECC deprivation criteria
     },
     {
@@ -800,6 +842,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['female', 'all'], // Female ownership/co-ownership mandatory
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: 1800000 // Upper limit for MIG-II
     },
     {
@@ -819,6 +862,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['female'], // "Primarily a 100% women program"
       occupationEligible: ['farmer', 'all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -836,6 +880,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['female', 'all'], // Large number of women employed
       occupationEligible: ['handloom_weaver', 'artisan'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -854,6 +899,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer', 'agricultural_stakeholder'],
+      casteEligible: ['all'],
       incomeLimit: null // Project-based eligibility
     },
     {
@@ -872,6 +918,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -890,6 +937,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -908,6 +956,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -925,6 +974,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -942,6 +992,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -959,6 +1010,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -976,6 +1028,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -993,6 +1046,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1010,6 +1064,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1027,6 +1082,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1045,6 +1101,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer', 'family_member_of_farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1062,6 +1119,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['farmer'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1082,6 +1140,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // Varies by specific scheme (EWS, LIG, MIG, HIG)
     },
     {
@@ -1102,6 +1161,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'], // Based on housing need and income
+      casteEligible: ['all'],
       incomeLimit: 32000
     },
     {
@@ -1119,6 +1179,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // School/college going age
       genderEligible: ['all'],
       occupationEligible: ['student'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1136,6 +1197,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // School-going children
       genderEligible: ['all'],
       occupationEligible: ['student'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1156,6 +1218,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Post-matriculation students
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: 200000
     },
     {
@@ -1176,6 +1239,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // UG/PG students
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: 250000
     },
     {
@@ -1194,6 +1258,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Research scholars
       genderEligible: ['all'],
       occupationEligible: ['student', 'research_scholar', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: null // May vary by specific fellowship
     },
     {
@@ -1214,6 +1279,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically up to 35 years
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: 600000
     },
     {
@@ -1234,6 +1300,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Typically up to 35 years
       genderEligible: ['all'],
       occupationEligible: ['student', 'scheduled_caste_member', 'scheduled_tribe_member'],
+      casteEligible: ['all'],
       incomeLimit: null // Varies, e.g. Prabuddha has < ₹8 lakh for 100%
     },
     {
@@ -1252,6 +1319,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // PhD scholars
       genderEligible: ['all'],
       occupationEligible: ['student', 'research_scholar', 'backward_class_member'],
+      casteEligible: ['all'],
       incomeLimit: null // Income limits usually apply for BC scholarships
     },
     {
@@ -1270,6 +1338,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // SSLC/PUC students
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1290,6 +1359,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Pre-matriculation students (Class I-X)
       genderEligible: ['all'],
       occupationEligible: ['student', 'minority_community_member'],
+      casteEligible: ['all'],
       incomeLimit: 100000
     },
     {
@@ -1308,6 +1378,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1325,6 +1396,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1344,6 +1416,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['all'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null // Tiered benefits based on PMJAY/State beneficiary status
     },
     {
@@ -1362,6 +1435,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Entrepreneurs/Company representatives
       genderEligible: ['all'], // Incentives for female workforce participation
       occupationEligible: ['entrepreneur', 'industrialist'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1380,6 +1454,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 35 },
       genderEligible: ['all'],
       occupationEligible: ['unemployed_youth', 'student_dropout', 'all'], // Seeking skill training
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1398,6 +1473,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Applicable to employers
       genderEligible: ['all'], // For SC/ST employees
       occupationEligible: ['employer'], // Beneficiary is employer, for SC/ST employees
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1415,6 +1491,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['female'],
       occupationEligible: ['shg_member'],
+      casteEligible: ['all'],
       incomeLimit: null // Targets women in SHGs, often from poorer sections
     },
     {
@@ -1432,6 +1509,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 },
       genderEligible: ['female'],
       occupationEligible: ['shg_member', 'scheduled_caste_member', 'scheduled_tribe_member'],
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1452,6 +1530,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 }, // Covers children 0-6, adolescent girls, pregnant/lactating women
       genderEligible: ['female', 'all'], // Specific groups targeted
       occupationEligible: ['all'], // Based on beneficiary category
+      casteEligible: ['all'], // Specific groups targeted
       incomeLimit: null // Universal for target groups
     },
     {
@@ -1470,6 +1549,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 18, max: 100 }, // Reproductive age
       genderEligible: ['female'],
       occupationEligible: ['all'], // With exclusions
+      casteEligible: ['all'],
       incomeLimit: null
     },
     {
@@ -1487,6 +1567,7 @@ const GOVERNMENT_SCHEMES: Scheme[] = [
       ageRange: { min: 0, max: 100 },
       genderEligible: ['female'],
       occupationEligible: ['all'],
+      casteEligible: ['all'],
       incomeLimit: null
     }
   ];
@@ -1502,7 +1583,8 @@ export default function SchemesScreen() {
   const [userProfile, setUserProfile] = useState<UserProfile>({
     age: '',
     gender: '',
-    occupation: ''
+    occupation: '',
+    caste: ''
   });
   const [showPersonalizedResults, setShowPersonalizedResults] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
@@ -1535,6 +1617,14 @@ export default function SchemesScreen() {
     { label: 'Other', value: 'other' }
   ];
 
+  const castes = [
+    { label: 'Select Caste', value: '' },
+    { label: 'Scheduled Caste (SC)', value: 'SC' },
+    { label: 'Scheduled Tribe (ST)', value: 'ST' },
+    { label: 'Other Backward Class (OBC)', value: 'OBC' },
+    { label: 'General', value: 'General' }
+  ];
+
   const categories = [
     { key: 'all', label: 'All', icon: 'apps-outline' },
     { key: 'health', label: 'Health', icon: 'medical-outline' },
@@ -1546,7 +1636,7 @@ export default function SchemesScreen() {
   ];
 
   const checkEligibility = (scheme: Scheme, profile: UserProfile) => {
-    if (!profile.age || !profile.gender || !profile.occupation) return true;
+    if (!profile.age || !profile.gender || !profile.occupation || !profile.caste) return true;
 
     // Check age eligibility
     if (scheme.ageRange) {
@@ -1566,6 +1656,13 @@ export default function SchemesScreen() {
     // Check occupation eligibility
     if (scheme.occupationEligible && !scheme.occupationEligible.includes('all')) {
       if (!scheme.occupationEligible.includes(profile.occupation)) {
+        return false;
+      }
+    }
+
+    // Check caste eligibility
+    if (scheme.casteEligible && !scheme.casteEligible.includes('all')) {
+      if (!scheme.casteEligible.includes(profile.caste as 'SC' | 'ST' | 'OBC' | 'General')) {
         return false;
       }
     }
@@ -1592,7 +1689,7 @@ export default function SchemesScreen() {
   });
 
   const handleFindSchemes = () => {
-    if (!userProfile.age || !userProfile.gender || !userProfile.occupation) {
+    if (!userProfile.age || !userProfile.gender || !userProfile.occupation || !userProfile.caste) {
       Alert.alert('Missing Information', 'Please fill in all fields to find personalized schemes.');
       return;
     }
@@ -1601,7 +1698,7 @@ export default function SchemesScreen() {
 
   const handleResetFilter = () => {
     setShowPersonalizedResults(false);
-    setUserProfile({ age: '', gender: '', occupation: '' });
+    setUserProfile({ age: '', gender: '', occupation: '', caste: '' });
   };
 
   const renderDropdown = (
@@ -1831,6 +1928,11 @@ export default function SchemesScreen() {
             />
             <TextInput
               style={styles.input}
+              placeholder="Caste"
+              placeholderTextColor="#999"
+            />
+            <TextInput
+              style={styles.input}
               placeholder="State/District"
               placeholderTextColor="#999"
             />
@@ -1890,6 +1992,15 @@ export default function SchemesScreen() {
             userProfile.occupation,
             (value: string) => setUserProfile(prev => ({ ...prev, occupation: value })),
             'Occupation'
+          )}
+        </View>
+
+        <View style={styles.formField}>
+          {renderDropdown(
+            castes,
+            userProfile.caste,
+            (value: string) => setUserProfile(prev => ({ ...prev, caste: value })),
+            'Caste'
           )}
         </View>
 
