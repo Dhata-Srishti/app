@@ -2,8 +2,8 @@ import { AppHeader } from '@/components/AppHeader';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { SOSOnboardingModal } from '@/components/SOSOnboardingModal';
 import { SOSProvider, useSOS } from '@/context/SOSContext';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import React from 'react';
 
 function TabContent() {
   const { isConfigured } = useSOS();
@@ -25,38 +25,54 @@ function TabContent() {
               }
             />
           ),
-          tabBarStyle: { display: 'none' },
-          tabBarButton: () => null,
+          tabBarActiveTintColor: '#f57f17',
+          tabBarInactiveTintColor: '#999',
+          tabBarStyle: {
+            backgroundColor: '#fff',
+            borderTopColor: '#e0e0e0',
+            paddingBottom: 5,
+            height: 60,
+          },
+          tabBarLabelStyle: {
+            fontSize: 12,
+            fontWeight: '500',
+          },
         }}
       >
         <Tabs.Screen
           name="index"
           options={{
             title: 'Home',
-          }}
-        />
-        <Tabs.Screen
-          name="forum"
-          options={{
-            title: 'Forum',
-          }}
-        />
-        <Tabs.Screen
-          name="chat"
-          options={{
-            title: 'Chat',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'home' : 'home-outline'} size={24} color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="marketplace"
           options={{
-            title: 'Shop',
+            title: 'Schemes',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'gift' : 'gift-outline'} size={24} color={color} />
+            ),
           }}
         />
         <Tabs.Screen
           name="network"
           options={{
-            title: 'Network',
+            title: 'Transport',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'bus' : 'bus-outline'} size={24} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="explore"
+          options={{
+            title: 'Explore',
+            tabBarIcon: ({ color, focused }) => (
+              <Ionicons name={focused ? 'compass' : 'compass-outline'} size={24} color={color} />
+            ),
           }}
         />
       </Tabs>

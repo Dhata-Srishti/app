@@ -6,16 +6,11 @@ import { useSOS } from '@/context/SOSContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ColorValue, Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-interface Message {
-  text: string;
-  sender: 'user' | 'bot';
-}
 
 const TEAL = '#6ec3c1';
 const CREAM = '#fff6e6';
@@ -28,9 +23,6 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const { t } = useTranslation();
-  const [messages, setMessages] = useState<Message[]>([
-    { text: "Welcome to Moo AI! 🐄 Ask me about Indian cow breeds.\n\n1️⃣ Learn about a breed's origin, history & socio-economic benefits.\n2️⃣ Don't know a breed? I can list all or filter by region.\n3️⃣ No cruelty-related queries allowed.", sender: 'bot' },
-  ]);
   const { sendSOS } = useSOS();
   
   // Handle pull-to-refresh action
@@ -51,13 +43,13 @@ export default function HomeScreen() {
   // Function to navigate to different sections
   const navigateToSection = (section: string) => {
     console.log(`Navigating to ${section}`);
-    if (section === 'forum') {
-      router.push('/(tabs)/forum' as any);
+    if (section === 'Nearby') {
+      router.push('/(tabs)/Nearby');
     } else if (section === 'report') {
       router.push('/(tabs)/stray-cows' as any);
     } else if (section === 'marketplace') {
       router.push('/(tabs)/marketplace' as any);
-    } else if (section === 'network') {
+    } else if (section === 'Network') {
       router.push('/(tabs)/network' as any);
     }
   };
@@ -79,10 +71,10 @@ export default function HomeScreen() {
 
         {/* Menu Grid */}
         <View style={styles.menuGrid}>
-          {/* Forum Card */}
+          {/* Nearby Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('forum')}
+            onPress={() => navigateToSection('Nearby')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
@@ -90,13 +82,13 @@ export default function HomeScreen() {
                 <View style={styles.iconCircle}>
                   <Ionicons name="chatbubbles-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.forum', 'Forum')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.forumDescription', 'Know about others opinions, and share yours!')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.Nearby', 'Nearby')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.NearbyDescription', 'Find nearby police, hospitals, clinincs and essential!')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Report Stray Cow Card */}
+          {/* Document Reader Card */}
           <TouchableOpacity 
             style={styles.menuCard}
             onPress={() => navigateToSection('report')}
@@ -107,8 +99,8 @@ export default function HomeScreen() {
                 <View style={styles.iconCircle}>
                   <Ionicons name="alert-circle-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.reportStrayCow', 'Report stray cow')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.helpHelpless', 'Help the helpless')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.reportStrayCow', 'Document Reader')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.helpHelpless', 'Your Legal Friend')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
@@ -124,8 +116,8 @@ export default function HomeScreen() {
                 <View style={styles.iconCircle}>
                   <Ionicons name="basket-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('marketplace.title', 'Shop')}</Text>
-                <Text style={styles.cardDescription}>{t('marketplace.description', 'Find Dairy products, services near you')}</Text>
+                <Text style={styles.cardTitle}>{t('marketplace.title', 'Scheme')}</Text>
+                <Text style={styles.cardDescription}>{t('marketplace.description', 'Know the schemes you are eligable for')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
@@ -133,16 +125,16 @@ export default function HomeScreen() {
           {/* Network Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('network')}
+            onPress={() => navigateToSection('Network')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="map-outline" size={36} color={TEAL} />
+                  <Ionicons name="bus-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.network', 'Network')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.networkDescription', 'Find Cows near you')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.Network', 'Transport')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.NetworkDescription', 'Find Buses and Routes!')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
@@ -186,10 +178,10 @@ export default function HomeScreen() {
             <TouchableOpacity onPress={() => setIsChatVisible(false)}>
               <Ionicons name="arrow-back" size={24} color="#000" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Moo AI</Text>
+            <Text style={styles.headerTitle}>Saathi AI</Text>
             <View style={{ width: 24 }} />
           </View>
-          <MooAIChat messages={messages} setMessages={setMessages} isOpen={isChatVisible} />
+          <MooAIChat isOpen={isChatVisible} />
         </SafeAreaView>
       </Modal>
     </ThemedView>
