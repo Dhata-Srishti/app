@@ -19,7 +19,7 @@ export const API_CONFIG = {
   },
   
   // Request timeout in milliseconds
-  TIMEOUT: 30000,
+  TIMEOUT: 60000,
   
   // Default language settings
   DEFAULT_LANGUAGES: {
@@ -44,7 +44,7 @@ export const TRANSPORT_API_CONFIG = {
   },
   
   // Request timeout in milliseconds
-  TIMEOUT: 10000,
+  TIMEOUT: 20000,
 } as const;
 
 // Helper function to get the full endpoint URL for main API

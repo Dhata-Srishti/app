@@ -1,7 +1,10 @@
 import { Message, useChatMessages } from '@/hooks/useChatMessages';
 import { useTTS } from '@/hooks/useTTS';
+import { getCurrentLanguage } from '@/lib/i18n';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
   Alert,
@@ -12,9 +15,18 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { dhataApi } from '../../services/api';
+
+// Navigation links for app sections
+const APP_SECTIONS = {
+  schemes: '/marketplace',
+  transport: '/network',
+  nearby: '/Nearby',
+  explore: '/explore',
+  home: '/',
+};
 
 interface MooAIChatProps {
   isOpen: boolean;
@@ -23,6 +35,8 @@ interface MooAIChatProps {
 export default function MooAIChat({ isOpen }: MooAIChatProps) {
   const [inputText, setInputText] = useState('');
   const scrollViewRef = useRef<ScrollView>(null);
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
   
   // Custom hooks for cleaner state management
   const {
@@ -52,12 +66,94 @@ export default function MooAIChat({ isOpen }: MooAIChatProps) {
     }
   }, [messages]);
 
+  // Function to navigate to app sections
+  const navigateToSection = (section: keyof typeof APP_SECTIONS) => {
+    const path = APP_SECTIONS[section];
+    router.push(path as any);
+  };
+
+  // Check if query is related to specific app sections
+  const getRelatedSection = (query: string): {section: keyof typeof APP_SECTIONS, relevance: number} | null => {
+    const lowercaseQuery = query.toLowerCase();
+    
+    // Check for schemes-related keywords
+    if (lowercaseQuery.includes('scheme') || 
+        lowercaseQuery.includes('benefit') || 
+        lowercaseQuery.includes('program') || 
+        lowercaseQuery.includes('subsidy') ||
+        lowercaseQuery.includes('welfare') ||
+        lowercaseQuery.includes('support') ||
+        lowercaseQuery.includes('grant')) {
+      return { section: 'schemes', relevance: 0.9 };
+    }
+    
+    // Check for transport-related keywords
+    if (lowercaseQuery.includes('bus') || 
+        lowercaseQuery.includes('transport') || 
+        lowercaseQuery.includes('train') || 
+        lowercaseQuery.includes('travel') ||
+        lowercaseQuery.includes('commute') ||
+        lowercaseQuery.includes('ticket') ||
+        lowercaseQuery.includes('schedule')) {
+      return { section: 'transport', relevance: 0.9 };
+    }
+    
+    // Check for nearby places keywords
+    if (lowercaseQuery.includes('nearby') || 
+        lowercaseQuery.includes('close to') || 
+        lowercaseQuery.includes('around me') || 
+        lowercaseQuery.includes('location') ||
+        lowercaseQuery.includes('hospital') ||
+        lowercaseQuery.includes('police') ||
+        lowercaseQuery.includes('restaurant') ||
+        lowercaseQuery.includes('atm') ||
+        lowercaseQuery.includes('hotel')) {
+      return { section: 'nearby', relevance: 0.9 };
+    }
+    
+    return null;
+  };
+
+  // Create redirection suggestion based on query
+  const createRedirectionSuggestion = (section: keyof typeof APP_SECTIONS, query: string): string => {
+    const currentLang = getCurrentLanguage();
+    
+    if (currentLang === 'kn') {
+      switch(section) {
+        case 'schemes':
+          return "ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ನಮ್ಮ ಯೋಜನೆಗಳ ವಿಭಾಗವನ್ನು ನೋಡಬಹುದು.";
+        case 'transport':
+          return "ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ನಮ್ಮ ಸಾರಿಗೆ ವಿಭಾಗವನ್ನು ನೋಡಬಹುದು.";
+        case 'nearby':
+          return "ಹತ್ತಿರದ ಸ್ಥಳಗಳನ್ನು ಕಂಡುಹಿಡಿಯಲು ನಮ್ಮ ಹತ್ತಿರದ ಸ್ಥಳಗಳ ವಿಭಾಗವನ್ನು ನೋಡಿ.";
+        default:
+          return "ಹೆಚ್ಚಿನ ಮಾಹಿತಿಗಾಗಿ ನಮ್ಮ ಅಪ್ಲಿಕೇಶನ್‌ನಲ್ಲಿ ಅನ್ವೇಷಿಸಿ.";
+      }
+    }
+    
+    switch(section) {
+      case 'schemes':
+        return "For more information, you can check our Schemes section.";
+      case 'transport':
+        return "For more details, you can visit our Transport section.";
+      case 'nearby':
+        return "To find nearby places, check our Nearby Places section.";
+      default:
+        return "Explore more in our app.";
+    }
+  };
+
   const handleSend = useCallback(async () => {
     if (!inputText.trim() || isLoading) return;
 
     const userMessageText = inputText.trim();
     setInputText('');
     setIsLoading(true);
+
+    // Get current language preference
+    const currentLang = getCurrentLanguage();
+    const userLanguage = currentLang === 'kn' ? 'kannada' : 'english';
+    const isKannada = currentLang === 'kn';
 
     // Add user message
     const userMessageId = addMessage({
@@ -68,15 +164,17 @@ export default function MooAIChat({ isOpen }: MooAIChatProps) {
     try {
       console.log('Sending query to API:', userMessageText);
       
+      // Make the API call to get a response
       const response = await dhataApi.textQuery({
         prompt: userMessageText,
         src_lang: 'english',
-        tgt_lang: 'english'
+        tgt_lang: userLanguage
       });
 
       console.log('API Response:', response);
 
       let botResponseText = '';
+      let originalText = '';
       
       if (response.success && response.data) {
         // Extract response text with improved handling
@@ -84,25 +182,53 @@ export default function MooAIChat({ isOpen }: MooAIChatProps) {
           botResponseText = response.data;
         } else if (response.data.response) {
           botResponseText = response.data.response;
+          originalText = response.data.original_response || response.data.response;
         } else if (response.data.text) {
           botResponseText = response.data.text;
+          originalText = response.data.original_text || response.data.text;
         } else if (response.data.answer) {
           botResponseText = response.data.answer;
+          originalText = response.data.original_answer || response.data.answer;
         } else {
           botResponseText = JSON.stringify(response.data);
+        }
+        
+        // If the data contains a translated response and original text in Kannada mode
+        if (isKannada && response.data.original_text && response.data.text) {
+          botResponseText = response.data.text; // Kannada text
+          originalText = response.data.original_text; // Original English text
         }
       } else {
         console.error('API Error:', response.error);
         botResponseText = getErrorMessage(response.error);
       }
 
+      // Check if query is related to specific app sections
+      const relatedSection = getRelatedSection(userMessageText);
+      
+      // Add redirection suggestion if relevant
+      if (relatedSection && relatedSection.relevance > 0.7) {
+        const redirectionSuggestion = createRedirectionSuggestion(relatedSection.section, userMessageText);
+        botResponseText = `${botResponseText}\n\n${redirectionSuggestion}`;
+      }
+
       // Add bot response
-      addMessage({
+      const botMessageId = addMessage({
         text: botResponseText,
         sender: 'bot',
         hasAudio: false,
-        isGeneratingAudio: false,
+        isGeneratingAudio: true, // Always indicate TTS is being generated
+        relatedSection: relatedSection?.section,
+        kannadaText: isKannada ? botResponseText : undefined,
       });
+
+      // Always generate TTS for any response
+      if (botResponseText) {
+        // Use a slight delay to ensure the message is rendered first
+        setTimeout(() => {
+          generateTTS(botResponseText, botMessageId, updateMessage);
+        }, 300);
+      }
 
     } catch (error) {
       console.error('Chat API Error:', error);
@@ -115,14 +241,30 @@ export default function MooAIChat({ isOpen }: MooAIChatProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [inputText, isLoading, addMessage, setIsLoading]);
+  }, [inputText, isLoading, addMessage, setIsLoading, generateTTS, updateMessage]);
 
   // Helper function to generate user-friendly error messages
   const getErrorMessage = (error?: string): string => {
+    const currentLang = getCurrentLanguage();
+    if (currentLang === 'kn') {
+      return `ಕ್ಷಮಿಸಿ, ನನಗೆ ಒಂದು ದೋಷ ಸಂಭವಿಸಿದೆ: ${error || 'ಅಜ್ಞಾತ ದೋಷ'}. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.`;
+    }
     return `I'm sorry, I encountered an error: ${error || 'Unknown error'}. Please try again.`;
   };
 
   const getNetworkErrorMessage = (error: any): string => {
+    const currentLang = getCurrentLanguage();
+    if (currentLang === 'kn') {
+      return `ಕ್ಷಮಿಸಿ, ನನ್ನ AI ಸೇವೆಗೆ ಸಂಪರ್ಕಿಸಲು ನನಗೆ ತೊಂದರೆಯಾಗುತ್ತಿದೆ. ಇದಕ್ಕೆ ಕಾರಣಗಳು:
+
+• ಬ್ಯಾಕೆಂಡ್ ಸರ್ವರ್ ಚಾಲನೆಯಲ್ಲಿಲ್ಲ
+• ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕದ ಸಮಸ್ಯೆಗಳು  
+• ಸರ್ವರ್ ಓವರ್‌ಲೋಡ್
+
+ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ಸಮಯದ ನಂತರ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.
+
+ತಾಂತ್ರಿಕ ವಿವರಗಳು: ${error}`;
+    }
     return `I'm sorry, I'm having trouble connecting to my AI service. This could be due to:
 
 • Backend server not running
@@ -213,12 +355,51 @@ Technical details: ${error}`;
     );
   };
 
+  // Render a button to navigate to related section
+  const renderNavigationButton = (section: keyof typeof APP_SECTIONS) => {
+    const currentLang = getCurrentLanguage();
+    const buttonText = currentLang === 'kn' ? 
+      {
+        'schemes': 'ಯೋಜನೆಗಳು',
+        'transport': 'ಸಾರಿಗೆ',
+        'nearby': 'ಹತ್ತಿರದ ಸ್ಥಳಗಳು',
+        'explore': 'ಅನ್ವೇಷಿಸಿ',
+        'home': 'ಮುಖಪುಟ'
+      }[section] : 
+      {
+        'schemes': 'Schemes',
+        'transport': 'Transport',
+        'nearby': 'Nearby Places',
+        'explore': 'Explore',
+        'home': 'Home'
+      }[section];
+
+    const iconName: any = {
+      'schemes': 'gift-outline',
+      'transport': 'bus-outline',
+      'nearby': 'location-outline',
+      'explore': 'compass-outline',
+      'home': 'home-outline'
+    }[section];
+
+    return (
+      <TouchableOpacity
+        style={styles.navigationButton}
+        onPress={() => navigateToSection(section)}
+        activeOpacity={0.7}
+      >
+        <Ionicons name={iconName} size={16} color="#FFFFFF" />
+        <Text style={styles.navigationButtonText}>{buttonText}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   // COMPLETELY SIMPLIFIED MESSAGE RENDERING FOR MOBILE VISIBILITY
   const renderMessage = (message: Message, index: number) => (
     <View key={message.id} style={styles.messageContainer}>
       <View style={styles.messageHeader}>
         <Text style={styles.messageSender}>
-          {message.sender === 'user' ? '👤 YOU:' : '🤖 BOT:'}
+          {message.sender === 'user' ? '👤 YOU:' : '🤖 AI:'}
         </Text>
       </View>
       
@@ -233,6 +414,13 @@ Technical details: ${error}`;
           </View>
         )}
       </View>
+      
+      {/* Redirection button if message has related section */}
+      {message.sender === 'bot' && message.relatedSection && (
+        <View style={styles.navigationContainer}>
+          {renderNavigationButton(message.relatedSection as keyof typeof APP_SECTIONS)}
+        </View>
+      )}
       
       {/* Kannada translation display */}
       {message.kannadaText && message.showKannadaText && (
@@ -252,7 +440,7 @@ Technical details: ${error}`;
     >
       {/* Chat Header with Clear Button */}
       <View style={styles.chatHeader}>
-        <Text style={styles.chatTitle}>Saathi AI Assistant</Text>
+        <Text style={styles.chatTitle}>AI Assistant</Text>
         <TouchableOpacity
           style={styles.clearButton}
           onPress={handleClearChat}
@@ -400,6 +588,26 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  navigationContainer: {
+    marginTop: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  navigationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0066CC',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#004999',
+  },
+  navigationButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    marginLeft: 5,
   },
   kannadaContainer: {
     marginTop: 15,
