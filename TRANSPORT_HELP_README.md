@@ -23,7 +23,7 @@ The Transport Help feature has been integrated as a new "Network" tab in the Dha
   - RESTful API endpoints
 
 ### Frontend (React Native)
-- **File**: `app/(tabs)/network.tsx`
+- **File**: `app/(tabs)/Network.tsx`
 - **Features**:
   - Two-tab interface (Search Buses / Bus Route)
   - Real-time search with loading states
@@ -244,7 +244,7 @@ curl -X POST http://localhost:8081/api/transport/bus-route \
 
 3. **Frontend can't connect to backend**
    - Verify Go server is running on port 8081
-   - Check network connectivity
+   - Check Network connectivity
    - Ensure CORS is properly configured
 
 4. **No search results**

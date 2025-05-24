@@ -73,7 +73,7 @@ const dbUtils = {
     }
   },
 
-  // Forum posts related functions
+  // Nearby posts related functions
   async createPost(postData) {
     try {
       const postRef = doc(collection(db, "posts"));

@@ -91,7 +91,7 @@ If testing on a physical device, update the API URL:
 ✅ **AI Integration**: Powered by Dwani API for cow breed information  
 ✅ **Text-to-Speech**: Click speaker icon to hear responses  
 ✅ **Audio Caching**: TTS responses cached for better performance  
-✅ **Error Handling**: Graceful fallbacks for network issues  
+✅ **Error Handling**: Graceful fallbacks for Network issues  
 ✅ **Mobile Responsive**: Works on iOS/Android via Expo  
 
 ### 🎯 Complete Routing Flow

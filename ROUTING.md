@@ -111,7 +111,7 @@ node test-routing.js
 ### Audio Caching
 - TTS responses are cached locally
 - Prevents redundant API calls for same text
-- Reduces network usage and improves UX
+- Reduces Network usage and improves UX
 
 ### Request Optimization
 - Configurable timeouts
@@ -129,7 +129,7 @@ node test-routing.js
 ### Debug Steps
 1. Check backend health: `curl http://localhost:5001/api/health`
 2. Test text query: Use the test script
-3. Check network logs in React Native debugger
+3. Check Network logs in React Native debugger
 4. Verify environment variables are set correctly
 
 ## Architecture Benefits

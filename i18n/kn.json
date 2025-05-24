@@ -11,12 +11,12 @@
     "kannada": "ಕನ್ನಡ"
   },
   "explore": {
-    "forum": "ವೇದಿಕೆ",
-    "forumDescription": "ಇತರರ ಅಭಿಪ್ರಾಯಗಳನ್ನು ತಿಳಿಯಿರಿ ಮತ್ತು ನಿಮ್ಮದನ್ನು ಹಂಚಿಕೊಳ್ಳಿ!",
+    "Nearby": "ವೇದಿಕೆ",
+    "NearbyDescription": "ಇತರರ ಅಭಿಪ್ರಾಯಗಳನ್ನು ತಿಳಿಯಿರಿ ಮತ್ತು ನಿಮ್ಮದನ್ನು ಹಂಚಿಕೊಳ್ಳಿ!",
     "reportStrayCow": "ಅಲೆಮಾರಿ ಹಸುವನ್ನು ವರದಿ ಮಾಡಿ",
     "helpHelpless": "ನೆರವು ಬೇಕಾದವರಿಗೆ ಸಹಾಯ ಮಾಡಿ",
-    "network": "ಜಾಲ",
-    "networkDescription": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಹಸುಗಳನ್ನು ಹುಡುಕಿ",
+    "Network": "ಜಾಲ",
+    "NetworkDescription": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಹಸುಗಳನ್ನು ಹುಡುಕಿ",
     "askMooAI": "ಇಮೂ AI ಗೆ ಕೇಳಿ"
   },
   "marketplace": {
@@ -25,9 +25,9 @@
   },
   "navigation": {
     "home": "ಮುಖಪುಟ",
-    "forum": "ವೇದಿಕೆ",
+    "Nearby": "ವೇದಿಕೆ",
     "chat": "ಚಾಟ್",
-    "shop": "ಅಂಗಡಿ",
+    "Scheme": "ಅಂಗಡಿ",
     "profile": "ಪ್ರೊಫೈಲ್"
   }
 } 

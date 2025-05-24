@@ -27,7 +27,7 @@ Both the conversation history and TTS functionality are now working correctly in
 - Persistent conversation history using AsyncStorage
 - Messages survive app restarts and modal close/open
 - Smart message management with automatic cleanup
-- Error handling for network issues
+- Error handling for Network issues
 
 ### ✅ **Text-to-Speech**
 - Platform-specific audio playback (Web Audio API for web, expo-audio for native)
@@ -51,7 +51,7 @@ Both the conversation history and TTS functionality are now working correctly in
 ### **Modified Files:**
 - `app/(app)/persona-ai.tsx` - Refactored with custom hooks
 - `app/(tabs)/index.tsx` - Updated for new component structure
-- `app/(tabs)/network.tsx` - Improved error handling
+- `app/(tabs)/Network.tsx` - Improved error handling
 
 ## 🧪 **Testing Results**
 
@@ -139,7 +139,7 @@ EXPO_PUBLIC_TRANSPORT_API_URL=http://192.168.159.96:8083
 1. **Persistent Storage**: Messages saved using AsyncStorage
 2. **Smart Caching**: TTS audio cached to avoid regeneration
 3. **Platform Support**: Works on Web, iOS, and Android
-4. **Error Handling**: Graceful handling of network/server issues
+4. **Error Handling**: Graceful handling of Network/server issues
 5. **Performance**: Optimized re-renders and memory usage
 6. **User Experience**: Clear status indicators and feedback
 

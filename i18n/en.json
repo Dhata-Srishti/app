@@ -11,23 +11,23 @@
     "kannada": "ಕನ್ನಡ"
   },
   "explore": {
-    "forum": "Forum",
-    "forumDescription": "Know about others opinions, and share yours!",
-    "reportStrayCow": "Report stray cow",
-    "helpHelpless": "Help the helpless",
-    "network": "Network",
-    "networkDescription": "Find Buses and Routes!",
+    "Nearby": "Nearby",
+    "NearbyDescription": "Find nearby police, hospitals, clinincs and essential!",
+    "reportStrayCow": "Document Reader",
+    "helpHelpless": "Your Legal Friend",
+    "Network": "Network",
+    "NetworkDescription": "Find Buses and Routes!",
     "askMooAI": "Ask Saathi AI"
   },
   "marketplace": {
-    "title": "Shop",
-    "description": "Find Dairy products, services near you"
+    "title": "Scheme",
+    "description": "Know the schemes you are eligable for"
   },
   "navigation": {
     "home": "Home",
-    "forum": "Forum",
+    "Nearby": "Nearby",
     "chat": "Chat",
-    "shop": "Shop",
+    "Scheme": "Scheme",
     "profile": "Profile"
   }
 } 

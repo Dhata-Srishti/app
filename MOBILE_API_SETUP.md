@@ -32,7 +32,7 @@ Your application uses **two separate backend services**:
    ```
 
 2. **Ensure Network Connectivity**
-   - Your mobile device must be on the **same WiFi network** as your development machine
+   - Your mobile device must be on the **same WiFi Network** as your development machine
    - Make sure your firewall allows connections on ports 5001 and 8083
 
 ## Environment Variable Configuration
@@ -150,27 +150,27 @@ go run transport-server.go  # Should start on port 8083
 ### "Network request failed" Error
 
 - Double-check your IP address
-- Ensure both your mobile device and development machine are on the same WiFi network
+- Ensure both your mobile device and development machine are on the same WiFi Network
 - Try restarting the Expo development server after setting environment variables
 
 ### Android HTTP Traffic Issues
 
 For production Android builds (API level 28+), you may need to allow HTTP traffic:
 
-Create `android/app/src/main/res/xml/network_security_config.xml`:
+Create `android/app/src/main/res/xml/Network_security_config.xml`:
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
+<Network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">192.168.1.100</domain>
     </domain-config>
-</network-security-config>
+</Network-security-config>
 ```
 
 And add to `android/app/src/main/AndroidManifest.xml`:
 ```xml
 <application
-    android:networkSecurityConfig="@xml/network_security_config"
+    android:NetworkSecurityConfig="@xml/Network_security_config"
     ...>
 ```
 

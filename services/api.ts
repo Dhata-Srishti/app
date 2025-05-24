@@ -120,7 +120,7 @@ class DhataApiService {
     } catch (error) {
       clearTimeout(timeoutId);
       if (error instanceof Error && error.name === 'AbortError') {
-        throw new Error('Request timeout - please check your network connection');
+        throw new Error('Request timeout - please check your Network connection');
       }
       throw error;
     }
