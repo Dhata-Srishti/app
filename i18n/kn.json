@@ -15,9 +15,18 @@
     "forumDescription": "ಇತರರ ಅಭಿಪ್ರಾಯಗಳನ್ನು ತಿಳಿಯಿರಿ ಮತ್ತು ನಿಮ್ಮದನ್ನು ಹಂಚಿಕೊಳ್ಳಿ!",
     "reportStrayCow": "ಅಲೆಮಾರಿ ಹಸುವನ್ನು ವರದಿ ಮಾಡಿ",
     "helpHelpless": "ನೆರವು ಬೇಕಾದವರಿಗೆ ಸಹಾಯ ಮಾಡಿ",
+    "documentReader": "ದಾಖಲೆ ಓದುಗ",
+    "documentReaderDescription": "ಮುಖ್ಯ ದಾಖಲೆಗಳನ್ನು ಓದಿ ಮತ್ತು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಿ",
+    "schemesEligibility": "ಯೋಜನೆಗಳ ಅರ್ಹತೆ",
+    "schemesDescription": "ಸರ್ಕಾರಿ ಯೋಜನೆಗಳಿಗೆ ನಿಮ್ಮ ಅರ್ಹತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ",
     "network": "ಜಾಲ",
-    "networkDescription": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಹಸುಗಳನ್ನು ಹುಡುಕಿ",
-    "askMooAI": "ಇಮೂ AI ಗೆ ಕೇಳಿ"
+    "networkDescription": "ಬಸ್ ಮತ್ತು ಮಾರ್ಗಗಳನ್ನು ಹುಡುಕಿ",
+    "askMooAI": "ಇಮೂ AI ಗೆ ಕೇಳಿ",
+    "movingImages": "ಚಲನಚಿತ್ರಗಳು",
+    "movingImagesDescription": "ಇತ್ತೀಚಿನ ಅಪ್‌ಡೇಟ್‌ಗಳು ಮತ್ತು ಸುದ್ದಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
+    "busAssistance": "ಬಸ್ ಸಹಾಯ",
+    "aroundYou": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತ",
+    "aroundYouDescription": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತಲಿನ ಸ್ಥಳಗಳು ಮತ್ತು ಸೇವೆಗಳನ್ನು ಪತ್ತೆಹಚ್ಚಿ"
   },
   "marketplace": {
     "title": "ಅಂಗಡಿ",
@@ -28,6 +37,7 @@
     "forum": "ವೇದಿಕೆ",
     "chat": "ಚಾಟ್",
     "shop": "ಅಂಗಡಿ",
+    "aroundYou": "ನಿಮ್ಮ ಸುತ್ತಮುತ್ತ",
     "profile": "ಪ್ರೊಫೈಲ್"
   }
 } 

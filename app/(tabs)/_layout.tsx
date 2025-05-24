@@ -3,7 +3,6 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { SOSOnboardingModal } from '@/components/SOSOnboardingModal';
 import { SOSProvider, useSOS } from '@/context/SOSContext';
 import { Tabs } from 'expo-router';
-import React from 'react';
 
 function TabContent() {
   const { isConfigured } = useSOS();
@@ -54,9 +53,9 @@ function TabContent() {
           }}
         />
         <Tabs.Screen
-          name="network"
+          name="bus"
           options={{
-            title: 'Network',
+            title: 'Bus',
           }}
         />
       </Tabs>

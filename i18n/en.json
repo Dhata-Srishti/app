@@ -15,9 +15,18 @@
     "forumDescription": "Know about others opinions, and share yours!",
     "reportStrayCow": "Report stray cow",
     "helpHelpless": "Help the helpless",
+    "documentReader": "Document Reader",
+    "documentReaderDescription": "Read and understand important documents",
+    "schemesEligibility": "Schemes Eligibility",
+    "schemesDescription": "Check your eligibility for government schemes",
     "network": "Network",
     "networkDescription": "Find Buses and Routes!",
-    "askMooAI": "Ask Saathi AI"
+    "askMooAI": "Ask Saathi AI",
+    "movingImages": "Moving Images",
+    "movingImagesDescription": "View latest updates and news",
+    "busAssistance": "Bus Assistance",
+    "aroundYou": "Around You",
+    "aroundYouDescription": "Discover places and services near you"
   },
   "marketplace": {
     "title": "Shop",
@@ -28,6 +37,7 @@
     "forum": "Forum",
     "chat": "Chat",
     "shop": "Shop",
+    "aroundYou": "Around You",
     "profile": "Profile"
   }
 } 

@@ -1,14 +1,13 @@
 import MooAIChat from '@/app/(app)/persona-ai';
-import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useSession } from '@/context';
 import { useSOS } from '@/context/SOSContext';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ColorValue, Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Animated, ColorValue, Dimensions, FlatList, Image, Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -17,10 +16,26 @@ interface Message {
   sender: 'user' | 'bot';
 }
 
+interface BannerImage {
+  id: number;
+  uri: string;
+}
+
 const TEAL = '#6ec3c1';
 const CREAM = '#fff6e6';
 const DARK = '#1a2a36';
 const TILE_GRADIENT: [ColorValue, ColorValue] = ['#a8e6e6', '#6ec3c1'];
+const BANNER_GRADIENT: [ColorValue, ColorValue] = ['#ffd3b6', '#ffaaa5'];
+
+// Dummy images for the carousel
+const BANNER_IMAGES: BannerImage[] = [
+  { id: 1, uri: 'https://picsum.photos/800/400?random=1' },
+  { id: 2, uri: 'https://picsum.photos/800/400?random=2' },
+  { id: 3, uri: 'https://picsum.photos/800/400?random=3' },
+];
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const BANNER_HEIGHT = 200; // Height for the banner
 
 export default function HomeScreen() {
   const { user } = useSession();
@@ -32,7 +47,23 @@ export default function HomeScreen() {
     { text: "Hello! Welcome to Saathi! Ask me anything about karnataka, it's governance and how you can benifit!", sender: 'bot' },
   ]);
   const { sendSOS } = useSOS();
+  const scrollX = useRef(new Animated.Value(0)).current;
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList<BannerImage>>(null);
   
+  // Auto-scroll effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (currentIndex < BANNER_IMAGES.length - 1) {
+        flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+      } else {
+        flatListRef.current?.scrollToIndex({ index: 0, animated: true });
+      }
+    }, 3000); // Change image every 3 seconds
+
+    return () => clearInterval(interval);
+  }, [currentIndex]);
+
   // Handle pull-to-refresh action
   const onRefresh = () => {
     setRefreshing(true);
@@ -51,14 +82,14 @@ export default function HomeScreen() {
   // Function to navigate to different sections
   const navigateToSection = (section: string) => {
     console.log(`Navigating to ${section}`);
-    if (section === 'forum') {
+    if (section === 'document-reader') {
       router.push('/(tabs)/forum' as any);
-    } else if (section === 'report') {
+    } else if (section === 'schemes') {
       router.push('/(tabs)/stray-cows' as any);
-    } else if (section === 'marketplace') {
+    } else if (section === 'around-you') {
       router.push('/(tabs)/marketplace' as any);
-    } else if (section === 'network') {
-      router.push('/(tabs)/network' as any);
+    } else if (section === 'bus') {
+      router.push('/(tabs)/bus' as any);
     }
   };
 
@@ -70,78 +101,141 @@ export default function HomeScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Welcome Text */}
-        <View style={styles.welcomeContainer}>
-          <ThemedText style={[styles.welcomeText, { color: DARK }]}>
-            {t('common.welcome', 'Welcome')}, {user?.displayName || t('common.user', 'User')}!
-          </ThemedText>
+        {/* Banner Tile with Image Carousel */}
+        <View style={styles.bannerContainer}>
+          <Animated.FlatList
+            ref={flatListRef}
+            data={BANNER_IMAGES}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false }
+            )}
+            onMomentumScrollEnd={(event) => {
+              const newIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+              setCurrentIndex(newIndex);
+            }}
+            renderItem={({ item }) => (
+              <View style={styles.bannerImageContainer}>
+                <Image
+                  source={{ uri: item.uri }}
+                  style={styles.bannerImage}
+                  resizeMode="cover"
+                />
+                <LinearGradient
+                  colors={['transparent', 'rgba(0,0,0,0.3)']}
+                  style={styles.bannerGradientOverlay}
+                >
+                  <View style={styles.bannerContent}>
+                    <Text style={styles.bannerTitle}>{t('explore.movingImages', 'Moving Images')}</Text>
+                    <Text style={styles.bannerDescription}>{t('explore.movingImagesDescription', 'View latest updates and news')}</Text>
+                  </View>
+                </LinearGradient>
+              </View>
+            )}
+            keyExtractor={(item) => item.id.toString()}
+          />
+          {/* Pagination Dots */}
+          <View style={styles.paginationContainer}>
+            {BANNER_IMAGES.map((_, index) => {
+              const inputRange = [
+                (index - 1) * SCREEN_WIDTH,
+                index * SCREEN_WIDTH,
+                (index + 1) * SCREEN_WIDTH,
+              ];
+              const dotWidth = scrollX.interpolate({
+                inputRange,
+                outputRange: [8, 16, 8],
+                extrapolate: 'clamp',
+              });
+              const opacity = scrollX.interpolate({
+                inputRange,
+                outputRange: [0.3, 1, 0.3],
+                extrapolate: 'clamp',
+              });
+              return (
+                <Animated.View
+                  key={index}
+                  style={[
+                    styles.paginationDot,
+                    {
+                      width: dotWidth,
+                      opacity,
+                    },
+                  ]}
+                />
+              );
+            })}
+          </View>
         </View>
 
         {/* Menu Grid */}
         <View style={styles.menuGrid}>
-          {/* Forum Card */}
+          {/* Document Reader Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('forum')}
+            onPress={() => navigateToSection('document-reader')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="chatbubbles-outline" size={36} color={TEAL} />
+                  <Ionicons name="document-text-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.forum', 'Forum')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.forumDescription', 'Know about others opinions, and share yours!')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.documentReader', 'Document Reader')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.documentReaderDescription', 'Read and understand important documents')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Report Stray Cow Card */}
+          {/* Schemes Eligibility Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('report')}
+            onPress={() => navigateToSection('schemes')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="alert-circle-outline" size={36} color={TEAL} />
+                  <Ionicons name="ribbon-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.reportStrayCow', 'Report stray cow')}</Text>
-                <Text style={styles.cardDescription}>{t('explore.helpHelpless', 'Help the helpless')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.schemesEligibility', 'Schemes Eligibility')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.schemesDescription', 'Check your eligibility for government schemes')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Marketplace Card */}
+          {/* Around You Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('marketplace')}
+            onPress={() => navigateToSection('around-you')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="basket-outline" size={36} color={TEAL} />
+                  <Ionicons name="location-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('marketplace.title', 'Shop')}</Text>
-                <Text style={styles.cardDescription}>{t('marketplace.description', 'Find Dairy products, services near you')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.aroundYou', 'Around You')}</Text>
+                <Text style={styles.cardDescription}>{t('explore.aroundYouDescription', 'Discover places and services near you')}</Text>
               </View>
             </LinearGradient>
           </TouchableOpacity>
 
-          {/* Network Card */}
+          {/* Bus Assistance Card */}
           <TouchableOpacity 
             style={styles.menuCard}
-            onPress={() => navigateToSection('network')}
+            onPress={() => navigateToSection('bus')}
             activeOpacity={0.85}
           >
             <LinearGradient colors={TILE_GRADIENT} style={styles.menuGradient}>
               <View style={styles.cardContent}>
                 <View style={styles.iconCircle}>
-                  <Ionicons name="map-outline" size={36} color={TEAL} />
+                  <Ionicons name="bus-outline" size={36} color={TEAL} />
                 </View>
-                <Text style={styles.cardTitle}>{t('explore.network', 'Network')}</Text>
+                <Text style={styles.cardTitle}>{t('explore.busAssistance', 'Bus Assistance')}</Text>
                 <Text style={styles.cardDescription}>{t('explore.networkDescription', 'Find Buses and Routes!')}</Text>
               </View>
             </LinearGradient>
@@ -203,16 +297,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  welcomeContainer: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 10,
-  },
-  welcomeText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#5D4037',
   },
   menuGrid: {
     flexDirection: 'row',
@@ -335,5 +419,60 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     elevation: 8,
     zIndex: 1,
+  },
+  bannerContainer: {
+    width: '100%',
+    height: BANNER_HEIGHT,
+    marginBottom: 18,
+  },
+  bannerImageContainer: {
+    width: SCREEN_WIDTH,
+    height: BANNER_HEIGHT,
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  bannerGradientOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: '50%',
+    justifyContent: 'flex-end',
+    padding: 15,
+  },
+  bannerContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  bannerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  bannerDescription: {
+    fontSize: 16,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.75)',
+    textShadowOffset: { width: -1, height: 1 },
+    textShadowRadius: 10,
+  },
+  paginationContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  paginationDot: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 4,
   },
 });
