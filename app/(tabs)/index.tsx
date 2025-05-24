@@ -12,11 +12,6 @@ import { ColorValue, Modal, RefreshControl, ScrollView, StyleSheet, TouchableOpa
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-interface Message {
-  text: string;
-  sender: 'user' | 'bot';
-}
-
 const TEAL = '#6ec3c1';
 const CREAM = '#fff6e6';
 const DARK = '#1a2a36';
@@ -28,9 +23,6 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isChatVisible, setIsChatVisible] = useState(false);
   const { t } = useTranslation();
-  const [messages, setMessages] = useState<Message[]>([
-    { text: "Hello! Welcome to Saathi! Ask me anything about karnataka, it's governance and how you can benifit!", sender: 'bot' },
-  ]);
   const { sendSOS } = useSOS();
   
   // Handle pull-to-refresh action
@@ -189,7 +181,7 @@ export default function HomeScreen() {
             <Text style={styles.headerTitle}>Saathi AI</Text>
             <View style={{ width: 24 }} />
           </View>
-          <MooAIChat messages={messages} setMessages={setMessages} isOpen={isChatVisible} />
+          <MooAIChat isOpen={isChatVisible} />
         </SafeAreaView>
       </Modal>
     </ThemedView>

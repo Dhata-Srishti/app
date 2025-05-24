@@ -1,180 +1,75 @@
-import { ThemedText } from '@/components/ThemedText';
+import { Message, useChatMessages } from '@/hooks/useChatMessages';
+import { useTTS } from '@/hooks/useTTS';
 import { Ionicons } from '@expo/vector-icons';
-import { useAudioPlayer } from 'expo-audio';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { dhataApi } from '../../services/api';
 
-interface Message {
-  text: string;
-  sender: 'user' | 'bot';
-  audioUri?: string;
-  isGeneratingAudio?: boolean;
-  hasAudio?: boolean;
-  kannadaText?: string;  // Store the Kannada translation for TTS
-  showKannadaText?: boolean;  // Toggle to show/hide Kannada text
-}
-
 interface MooAIChatProps {
-  messages: Message[];
-  setMessages: (messages: Message[]) => void;
   isOpen: boolean;
 }
 
-export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatProps) {
+export default function MooAIChat({ isOpen }: MooAIChatProps) {
   const [inputText, setInputText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [playingAudioId, setPlayingAudioId] = useState<number | null>(null);
-  const [audioCache, setAudioCache] = useState<Map<string, string>>(new Map());
   const scrollViewRef = useRef<ScrollView>(null);
-  const audioPlayer = useAudioPlayer();
+  
+  // Custom hooks for cleaner state management
+  const {
+    messages,
+    addMessage,
+    updateMessage,
+    clearMessages,
+    isLoading,
+    setIsLoading,
+  } = useChatMessages();
 
+  const {
+    generateTTS,
+    playAudio,
+    stopAudio,
+    isGenerating,
+    isPlaying,
+    clearCache,
+  } = useTTS();
+
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (scrollViewRef.current) {
-      scrollViewRef.current.scrollToEnd({ animated: true });
+    if (scrollViewRef.current && messages.length > 0) {
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
     }
   }, [messages]);
 
-  const generateTTS = async (text: string, messageIndex: number) => {
-    // Check if audio is already cached
-    if (audioCache.has(text)) {
-      const audioUri = audioCache.get(text)!;
-      updateMessageAudio(messageIndex, audioUri, false, true);
-      return;
-    }
-
-    // Set generating state
-    updateMessageAudio(messageIndex, undefined, true, false);
-
-    try {
-      console.log('Generating TTS for:', text.substring(0, 50) + '...');
-      const ttsResponse = await dhataApi.textToSpeech({ 
-        input_text: text,
-        return_translation: true  // Request translation info
-      });
-      
-      if (ttsResponse.audioUri) {
-        console.log('TTS generated successfully:', ttsResponse.audioUri);
-        if (ttsResponse.kannada_text) {
-          console.log('Kannada translation for TTS:', ttsResponse.kannada_text);
-        }
-        
-        // Cache the audio
-        setAudioCache(prev => new Map(prev).set(text, ttsResponse.audioUri!));
-        updateMessageAudioWithTranslation(
-          messageIndex, 
-          ttsResponse.audioUri, 
-          false, 
-          true, 
-          ttsResponse.kannada_text
-        );
-      } else {
-        console.warn('TTS generation returned null');
-        // Failed to generate audio
-        updateMessageAudio(messageIndex, undefined, false, false);
-      }
-    } catch (error) {
-      console.error('TTS generation failed:', error);
-      updateMessageAudio(messageIndex, undefined, false, false);
-    }
-  };
-
-  const updateMessageAudio = (messageIndex: number, audioUri?: string, isGenerating?: boolean, hasAudio?: boolean) => {
-    const newMessages = [...messages];
-    newMessages[messageIndex] = {
-      ...newMessages[messageIndex],
-      audioUri,
-      isGeneratingAudio: isGenerating,
-      hasAudio
-    };
-    setMessages(newMessages);
-  };
-
-  const updateMessageAudioWithTranslation = (
-    messageIndex: number, 
-    audioUri?: string, 
-    isGenerating?: boolean, 
-    hasAudio?: boolean,
-    kannadaText?: string
-  ) => {
-    const newMessages = [...messages];
-    newMessages[messageIndex] = {
-      ...newMessages[messageIndex],
-      audioUri,
-      isGeneratingAudio: isGenerating,
-      hasAudio,
-      kannadaText,
-      showKannadaText: false  // Initially hidden
-    };
-    setMessages(newMessages);
-  };
-
-  const toggleKannadaText = (messageIndex: number) => {
-    const newMessages = [...messages];
-    newMessages[messageIndex] = {
-      ...newMessages[messageIndex],
-      showKannadaText: !newMessages[messageIndex].showKannadaText
-    };
-    setMessages(newMessages);
-  };
-
-  const playAudio = async (audioUri: string, messageIndex: number) => {
-    try {
-      setPlayingAudioId(messageIndex);
-
-      // Replace the audio source and play
-      audioPlayer.replace(audioUri);
-      audioPlayer.play();
-
-      // We'll use a timeout to reset playing state since expo-audio doesn't have the same event system
-      // In a real app, you might want to use a more sophisticated approach
-      setTimeout(() => {
-        setPlayingAudioId(null);
-      }, 5000); // Adjust based on typical audio length
-
-    } catch (error) {
-      console.error('Error playing audio:', error);
-      setPlayingAudioId(null);
-    }
-  };
-
-  const stopAudio = async () => {
-    try {
-      audioPlayer.pause();
-      setPlayingAudioId(null);
-    } catch (error) {
-      console.error('Error stopping audio:', error);
-    }
-  };
-
-  const handleSend = async () => {
+  const handleSend = useCallback(async () => {
     if (!inputText.trim() || isLoading) return;
 
-    const userMessage: Message = {
-      text: inputText.trim(),
-      sender: 'user',
-    };
-
-    const updatedMessages = [...messages, userMessage];
-    setMessages(updatedMessages);
+    const userMessageText = inputText.trim();
     setInputText('');
     setIsLoading(true);
 
+    // Add user message
+    const userMessageId = addMessage({
+      text: userMessageText,
+      sender: 'user',
+    });
+
     try {
-      console.log('Sending query to API:', userMessage.text);
+      console.log('Sending query to API:', userMessageText);
       
-      // Send query to backend API
       const response = await dhataApi.textQuery({
-        prompt: userMessage.text,
+        prompt: userMessageText,
         src_lang: 'english',
         tgt_lang: 'english'
       });
@@ -184,8 +79,7 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
       let botResponseText = '';
       
       if (response.success && response.data) {
-        // Extract the response text from the API response
-        // The exact structure may vary based on the Dwani API response format
+        // Extract response text with improved handling
         if (typeof response.data === 'string') {
           botResponseText = response.data;
         } else if (response.data.response) {
@@ -195,74 +89,160 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
         } else if (response.data.answer) {
           botResponseText = response.data.answer;
         } else {
-          // Fallback to stringify the response if we can't find the text
           botResponseText = JSON.stringify(response.data);
         }
       } else {
         console.error('API Error:', response.error);
-        botResponseText = `I'm sorry, I encountered an error: ${response.error || 'Unknown error'}. Please try again.`;
+        botResponseText = getErrorMessage(response.error);
       }
 
-      const botResponse: Message = {
+      // Add bot response
+      addMessage({
         text: botResponseText,
         sender: 'bot',
         hasAudio: false,
         isGeneratingAudio: false,
-      };
+      });
 
-      const finalMessages = [...updatedMessages, botResponse];
-      setMessages(finalMessages);
-      
-      // Auto-generate TTS for better user experience (optional)
-      // You can comment this out if you prefer manual TTS generation
-      // generateTTS(botResponseText, finalMessages.length - 1);
     } catch (error) {
       console.error('Chat API Error:', error);
-      const errorMessage: Message = {
-        text: `I'm sorry, I'm having trouble connecting to my AI service. This could be due to:\n\n• Backend server not running\n• Network connectivity issues\n• Server overload\n\nPlease try again in a moment.\n\nTechnical details: ${error}`,
+      addMessage({
+        text: getNetworkErrorMessage(error),
         sender: 'bot',
         hasAudio: false,
         isGeneratingAudio: false,
-      };
-      setMessages([...updatedMessages, errorMessage]);
+      });
     } finally {
       setIsLoading(false);
     }
+  }, [inputText, isLoading, addMessage, setIsLoading]);
+
+  // Helper function to generate user-friendly error messages
+  const getErrorMessage = (error?: string): string => {
+    return `I'm sorry, I encountered an error: ${error || 'Unknown error'}. Please try again.`;
   };
 
-  const renderSpeakerButton = (message: Message, index: number) => {
-    const isPlaying = playingAudioId === index;
-    const isGenerating = message.isGeneratingAudio;
+  const getNetworkErrorMessage = (error: any): string => {
+    return `I'm sorry, I'm having trouble connecting to my AI service. This could be due to:
+
+• Backend server not running
+• Network connectivity issues  
+• Server overload
+
+Please try again in a moment.
+
+Technical details: ${error}`;
+  };
+
+  const handleTTSAction = useCallback(async (message: Message) => {
+    const isCurrentlyGenerating = isGenerating(message.id);
+    const isCurrentlyPlaying = isPlaying(message.id);
+    
+    if (isCurrentlyGenerating) return;
+    
+    if (isCurrentlyPlaying) {
+      await stopAudio();
+    } else if (message.hasAudio && message.audioUri) {
+      // Use URI-based playback (simple approach)
+      await playAudio(message.audioUri, message.id);
+    } else {
+      // Generate new audio
+      await generateTTS(message.text, message.id, updateMessage);
+    }
+  }, [generateTTS, playAudio, stopAudio, isGenerating, isPlaying, updateMessage]);
+
+  const toggleKannadaText = useCallback((messageId: string) => {
+    const message = messages.find(msg => msg.id === messageId);
+    if (message) {
+      updateMessage(messageId, {
+        showKannadaText: !message.showKannadaText
+      });
+    }
+  }, [messages, updateMessage]);
+
+  const handleClearChat = useCallback(() => {
+    Alert.alert(
+      'Clear Chat History',
+      'Are you sure you want to clear all messages? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Clear', 
+          style: 'destructive',
+          onPress: () => {
+            clearMessages();
+            clearCache();
+          }
+        },
+      ]
+    );
+  }, [clearMessages, clearCache]);
+
+  const renderSpeakerButton = (message: Message) => {
+    const isCurrentlyPlaying = isPlaying(message.id);
+    const isCurrentlyGenerating = isGenerating(message.id);
     const hasAudio = message.hasAudio;
+
+    // Simple status for debugging
+    const buttonStatus = isCurrentlyGenerating ? 'GENERATING' : 
+                        isCurrentlyPlaying ? 'PLAYING' : 
+                        hasAudio ? 'READY' : 'GENERATE';
 
     return (
       <TouchableOpacity
-        style={styles.speakerButton}
-        onPress={() => {
-          if (isGenerating) return;
-          
-          if (isPlaying) {
-            stopAudio();
-          } else if (hasAudio && message.audioUri) {
-            playAudio(message.audioUri, index);
-          } else {
-            generateTTS(message.text, index);
-          }
-        }}
-        disabled={isGenerating}
+        style={[
+          styles.speakerButton,
+          isCurrentlyGenerating && { backgroundColor: '#FFE0B2' },
+          isCurrentlyPlaying && { backgroundColor: '#C8E6C9' },
+          hasAudio && !isCurrentlyPlaying && { backgroundColor: '#E3F2FD' }
+        ]}
+        onPress={() => handleTTSAction(message)}
+        disabled={isCurrentlyGenerating}
+        activeOpacity={0.7}
       >
-        {isGenerating ? (
-          <ActivityIndicator size={16} color="#2196F3" />
+        {isCurrentlyGenerating ? (
+          <ActivityIndicator size={16} color="#FF9800" />
         ) : (
           <Ionicons
-            name={isPlaying ? "stop" : "volume-high"}
+            name={isCurrentlyPlaying ? "stop" : hasAudio ? "volume-high" : "volume-medium"}
             size={16}
-            color="#2196F3"
+            color={isCurrentlyPlaying ? "#4CAF50" : hasAudio ? "#2196F3" : "#666"}
           />
         )}
       </TouchableOpacity>
     );
   };
+
+  // COMPLETELY SIMPLIFIED MESSAGE RENDERING FOR MOBILE VISIBILITY
+  const renderMessage = (message: Message, index: number) => (
+    <View key={message.id} style={styles.messageContainer}>
+      <View style={styles.messageHeader}>
+        <Text style={styles.messageSender}>
+          {message.sender === 'user' ? '👤 YOU:' : '🤖 BOT:'}
+        </Text>
+      </View>
+      
+      <View style={styles.messageBox}>
+        <Text style={styles.messageTextBasic}>
+          {message.text}
+        </Text>
+        
+        {message.sender === 'bot' && (
+          <View style={styles.buttonContainer}>
+            {renderSpeakerButton(message)}
+          </View>
+        )}
+      </View>
+      
+      {/* Kannada translation display */}
+      {message.kannadaText && message.showKannadaText && (
+        <View style={styles.kannadaContainer}>
+          <Text style={styles.kannadaLabelBasic}>Kannada (for TTS):</Text>
+          <Text style={styles.kannadaTextBasic}>{message.kannadaText}</Text>
+        </View>
+      )}
+    </View>
+  );
 
   return (
     <KeyboardAvoidingView
@@ -270,61 +250,39 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
+      {/* Chat Header with Clear Button */}
+      <View style={styles.chatHeader}>
+        <Text style={styles.chatTitle}>Saathi AI Assistant</Text>
+        <TouchableOpacity
+          style={styles.clearButton}
+          onPress={handleClearChat}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.clearButtonText}>CLEAR</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Messages Container */}
       <ScrollView
         ref={scrollViewRef}
         style={styles.messagesContainer}
         contentContainerStyle={styles.messagesContent}
+        showsVerticalScrollIndicator={false}
       >
-        {messages.map((message, index) => (
-          <View
-            key={index}
-            style={[
-              styles.messageBubble,
-              message.sender === 'user' ? styles.userMessage : styles.botMessage,
-            ]}
-          >
-            <View style={styles.messageContent}>
-              <ThemedText style={styles.messageText}>{message.text}</ThemedText>
-              {message.sender === 'bot' && (
-                <View style={styles.botControls}>
-                  {message.kannadaText && (
-                    <TouchableOpacity
-                      style={styles.kannadaButton}
-                      onPress={() => toggleKannadaText(index)}
-                    >
-                      <Ionicons
-                        name={message.showKannadaText ? "eye-off" : "eye"}
-                        size={14}
-                        color="#4CAF50"
-                      />
-                    </TouchableOpacity>
-                  )}
-                  {renderSpeakerButton(message, index)}
-                </View>
-              )}
-            </View>
-            
-            {/* Show Kannada translation when toggled */}
-            {message.kannadaText && message.showKannadaText && (
-              <View style={styles.kannadaTextContainer}>
-                <ThemedText style={styles.kannadaLabel}>Kannada (for TTS):</ThemedText>
-                <ThemedText style={styles.kannadaText}>{message.kannadaText}</ThemedText>
-              </View>
-            )}
-          </View>
-        ))}
+        {messages.map((message, index) => renderMessage(message, index))}
         
-        {/* Show loading indicator when AI is thinking */}
+        {/* Loading indicator */}
         {isLoading && (
-          <View style={[styles.messageBubble, styles.botMessage, styles.loadingMessage]}>
-            <ActivityIndicator size="small" color="#FFFFFF" />
-            <ThemedText style={[styles.messageText, styles.loadingText]}>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#000000" />
+            <Text style={styles.loadingTextBasic}>
               AI is thinking...
-            </ThemedText>
+            </Text>
           </View>
         )}
       </ScrollView>
 
+      {/* Input Container */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -335,6 +293,9 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
           multiline
           maxLength={500}
           editable={!isLoading}
+          returnKeyType="send"
+          onSubmitEditing={handleSend}
+          blurOnSubmit={false}
         />
         <TouchableOpacity
           style={[
@@ -343,15 +304,12 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
           ]}
           onPress={handleSend}
           disabled={!inputText.trim() || isLoading}
+          activeOpacity={0.8}
         >
           {isLoading ? (
             <ActivityIndicator size={24} color="#FFFFFF" />
           ) : (
-            <Ionicons
-              name="send"
-              size={24}
-              color="#FFFFFF"
-            />
+            <Text style={styles.sendButtonText}>SEND</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -359,179 +317,161 @@ export default function MooAIChat({ messages, setMessages, isOpen }: MooAIChatPr
   );
 }
 
+// COMPLETELY SIMPLIFIED STYLES FOR MAXIMUM VISIBILITY
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#FFFFFF',
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#F0F0F0',
+    borderBottomWidth: 2,
+    borderBottomColor: '#000000',
+  },
+  chatTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  clearButton: {
+    padding: 10,
+    backgroundColor: '#FF0000',
+    borderRadius: 5,
+  },
+  clearButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
   messagesContainer: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   messagesContent: {
-    padding: 16,
-    paddingBottom: 32,
+    padding: 20,
   },
-  messageBubble: {
-    maxWidth: '85%',
-    padding: 16,
-    borderRadius: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 3.84,
-    elevation: 5,
+  messageContainer: {
+    marginBottom: 20,
+    padding: 15,
+    backgroundColor: '#F8F8F8',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 10,
   },
-  userMessage: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#2196F3',
-    borderBottomRightRadius: 8,
-    marginLeft: '15%',
+  messageHeader: {
+    marginBottom: 10,
   },
-  botMessage: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#4CAF50',
-    borderBottomLeftRadius: 8,
-    marginRight: '15%',
+  messageSender: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000000',
   },
-  loadingMessage: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#FF9800',
-  },
-  messageContent: {
+  messageBox: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    justifyContent: 'space-between',
   },
-  messageText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    lineHeight: 22,
+  messageTextBasic: {
     flex: 1,
-    marginRight: 8,
+    fontSize: 18,
+    color: '#000000',
     fontWeight: '500',
+    lineHeight: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#CCCCCC',
+    borderRadius: 5,
   },
-  loadingText: {
-    marginLeft: 8,
-    fontStyle: 'italic',
-    color: '#FFFFFF',
-    fontWeight: '500',
+  buttonContainer: {
+    marginLeft: 10,
+    alignItems: 'center',
+  },
+  speakerButton: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#EEEEEE',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  kannadaContainer: {
+    marginTop: 15,
+    padding: 10,
+    backgroundColor: '#E8E8E8',
+    borderWidth: 1,
+    borderColor: '#AAAAAA',
+    borderRadius: 5,
+  },
+  kannadaLabelBasic: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 5,
+  },
+  kannadaTextBasic: {
+    fontSize: 16,
+    color: '#000000',
+    lineHeight: 20,
+  },
+  loadingContainer: {
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#F0F0F0',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  loadingTextBasic: {
+    marginTop: 10,
+    fontSize: 18,
+    color: '#000000',
+    fontWeight: 'bold',
   },
   inputContainer: {
     flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderTopColor: '#E0E0E0',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: -2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
+    padding: 20,
+    backgroundColor: '#F0F0F0',
+    borderTopWidth: 2,
+    borderTopColor: '#000000',
   },
   input: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    marginRight: 12,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 5,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    marginRight: 10,
     fontSize: 16,
-    maxHeight: 120,
-    borderWidth: 1,
-    borderColor: '#E1E5E9',
-    color: '#2C3E50',
+    maxHeight: 100,
+    color: '#000000',
   },
   sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#2196F3',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: '#0066CC',
+    borderWidth: 2,
+    borderColor: '#000000',
+    borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    minWidth: 80,
   },
   sendButtonDisabled: {
-    opacity: 0.5,
-    backgroundColor: '#BDC3C7',
+    backgroundColor: '#CCCCCC',
   },
-  speakerButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginLeft: 8,
-    marginTop: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 3,
-  },
-  botControls: {
-    flexDirection: 'column',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
-  kannadaButton: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.8)',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.5,
-    elevation: 2,
-  },
-  kannadaTextContainer: {
-    marginTop: 12,
-    padding: 12,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-  },
-  kannadaLabel: {
-    fontSize: 12,
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-    opacity: 0.9,
-  },
-  kannadaText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: '500',
   },
 }); 

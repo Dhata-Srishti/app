@@ -1,19 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { TRANSPORT_API_CONFIG } from '../../config/api.config';
 
 interface BusService {
   serviceName: string;
@@ -54,11 +55,127 @@ export default function NetworkScreen() {
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null);
   const [routeResult, setRouteResult] = useState<BMTCBus | null>(null);
   const [activeTab, setActiveTab] = useState<'search' | 'route'>('search');
+  const [transportServerAvailable, setTransportServerAvailable] = useState<boolean | null>(null);
 
-  // Use IP address for mobile devices, localhost for web
-  const API_BASE_URL = Platform.OS === 'web' 
-    ? 'http://localhost:8083/api/transport'
-    : 'http://192.168.159.96:8083/api/transport';
+  // Check transport server availability on component mount
+  useEffect(() => {
+    checkTransportServerAvailability();
+  }, []);
+
+  const checkTransportServerAvailability = async () => {
+    try {
+      const baseUrl = getTransportBaseUrl();
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // Quick 3-second check
+      
+      const response = await platformFetch(`${baseUrl}/health`, { 
+        method: 'GET',
+        signal: controller.signal 
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        setTransportServerAvailable(true);
+      } else {
+        setTransportServerAvailable(false);
+      }
+    } catch (error) {
+      console.log('Transport server not available:', error);
+      setTransportServerAvailable(false);
+    }
+  };
+
+  // Web: Use localhost:8083 
+  // Mobile: Use environment variable or fallback gracefully
+  const getTransportBaseUrl = (): string => {
+    if (Platform.OS === 'web') {
+      return 'http://localhost:8083/api/transport';
+    } else {
+      const baseUrl = TRANSPORT_API_CONFIG.BASE_URL;
+      if (baseUrl === 'http://localhost:8083') {
+        // Use the IP from environment if available
+        return 'http://192.168.159.96:8083/api/transport';
+      }
+      return `${baseUrl}/api/transport`;
+    }
+  };
+
+  const API_BASE_URL = getTransportBaseUrl();
+
+  // Alternative fetch function for web platforms
+  const webFetch = (url: string, options: RequestInit): Promise<Response> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open(options.method || 'GET', url);
+      
+      if (options.headers) {
+        Object.entries(options.headers as Record<string, string>).forEach(([key, value]) => {
+          xhr.setRequestHeader(key, value);
+        });
+      }
+      
+      xhr.onload = () => {
+        const response = new Response(xhr.responseText, {
+          status: xhr.status,
+          statusText: xhr.statusText,
+          headers: new Headers(xhr.getAllResponseHeaders().split('\r\n').reduce((acc, line) => {
+            const [key, value] = line.split(': ');
+            if (key && value) acc[key] = value;
+            return acc;
+          }, {} as Record<string, string>))
+        });
+        resolve(response);
+      };
+      
+      xhr.onerror = () => reject(new Error(`Network request failed: ${xhr.status} ${xhr.statusText}`));
+      xhr.ontimeout = () => reject(new Error('Network request timed out'));
+      
+      if (options.signal) {
+        options.signal.addEventListener('abort', () => {
+          xhr.abort();
+          reject(new Error('Request aborted'));
+        });
+      }
+      
+      xhr.timeout = 10000;
+      xhr.send(options.body as string);
+    });
+  };
+
+  const platformFetch = Platform.OS === 'web' ? webFetch : fetch;
+
+  // Show helpful setup message instead of intrusive alerts
+  const showTransportSetupMessage = useCallback(() => {
+    const message = Platform.OS === 'web' 
+      ? 'Transport server not running. Please start it with:\n\ncd backend && go run transport-server.go'
+      : `Transport server setup needed:\n\n1. Start the transport server on your dev machine\n2. Ensure both devices are on the same WiFi\n\nCurrent URL: ${API_BASE_URL}`;
+    
+    Alert.alert('Transport Setup Required', message, [
+      { text: 'OK', style: 'default' },
+      { 
+        text: 'Retry', 
+        onPress: () => checkTransportServerAvailability()
+      }
+    ]);
+  }, [API_BASE_URL]);
+
+  const handleTransportError = useCallback((error: any, operation: string) => {
+    console.log(`Transport ${operation} error:`, error);
+    
+    // Don't show intrusive alerts for every error - just log and show user-friendly message
+    const errorMessage = transportServerAvailable === false 
+      ? 'Transport service is not available. Please check setup.'
+      : 'Network error occurred. Please try again.';
+    
+    // Only show alert for user-initiated actions
+    if (operation === 'search' || operation === 'route') {
+      Alert.alert('Transport Service', errorMessage, [
+        { text: 'OK', style: 'default' },
+        { text: 'Setup Help', onPress: showTransportSetupMessage }
+      ]);
+    }
+  }, [transportServerAvailable, showTransportSetupMessage]);
 
   const searchBuses = async () => {
     if (!from.trim() || !to.trim()) {
@@ -66,34 +183,46 @@ export default function NetworkScreen() {
       return;
     }
 
+    if (transportServerAvailable === false) {
+      showTransportSetupMessage();
+      return;
+    }
+
     setLoading(true);
+    
     try {
-      const response = await fetch(`${API_BASE_URL}/search-buses`, {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+      const response = await platformFetch(`${API_BASE_URL}/search-buses`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: from.trim(),
           to: to.trim(),
           date: date.trim() || undefined,
         }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
       
       if (data.success) {
         setSearchResult(data.data);
         setRouteResult(null);
+        setTransportServerAvailable(true);
       } else {
         Alert.alert('Error', data.error || 'Failed to search buses');
       }
-    } catch (error) {
-      console.error('Search error:', error);
-      const errorMessage = Platform.OS === 'web' 
-        ? 'Network error. Please check if the transport server is running on localhost:8083.'
-        : 'Network error. Please ensure you are connected to the same WiFi network as your development machine.';
-      Alert.alert('Connection Error', errorMessage);
+    } catch (error: unknown) {
+      handleTransportError(error, 'search');
+      setTransportServerAvailable(false);
     } finally {
       setLoading(false);
     }
@@ -105,16 +234,17 @@ export default function NetworkScreen() {
       return;
     }
 
+    if (transportServerAvailable === false) {
+      showTransportSetupMessage();
+      return;
+    }
+
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/bus-route`, {
+      const response = await platformFetch(`${API_BASE_URL}/bus-route`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          busNumber: busNumber.trim(),
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ busNumber: busNumber.trim() }),
       });
 
       const data = await response.json();
@@ -122,15 +252,13 @@ export default function NetworkScreen() {
       if (data.success) {
         setRouteResult(data.data);
         setSearchResult(null);
+        setTransportServerAvailable(true);
       } else {
         Alert.alert('Error', data.error || 'Failed to get bus route');
       }
     } catch (error) {
-      console.error('Route error:', error);
-      const errorMessage = Platform.OS === 'web' 
-        ? 'Network error. Please check if the transport server is running on localhost:8083.'
-        : 'Network error. Please ensure you are connected to the same WiFi network as your development machine.';
-      Alert.alert('Connection Error', errorMessage);
+      handleTransportError(error, 'route');
+      setTransportServerAvailable(false);
     } finally {
       setLoading(false);
     }
@@ -184,6 +312,36 @@ export default function NetworkScreen() {
     </View>
   );
 
+  const renderServerStatus = () => {
+    if (transportServerAvailable === null) {
+      return (
+        <View style={styles.statusContainer}>
+          <ActivityIndicator size="small" color="#f57f17" />
+          <Text style={styles.statusText}>Checking transport service...</Text>
+        </View>
+      );
+    }
+    
+    if (transportServerAvailable === false) {
+      return (
+        <View style={[styles.statusContainer, styles.statusError]}>
+          <Ionicons name="warning-outline" size={20} color="#ff6b6b" />
+          <Text style={styles.statusTextError}>Transport service unavailable</Text>
+          <TouchableOpacity onPress={showTransportSetupMessage} style={styles.helpButton}>
+            <Text style={styles.helpButtonText}>Setup Help</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+    
+    return (
+      <View style={[styles.statusContainer, styles.statusSuccess]}>
+        <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+        <Text style={styles.statusTextSuccess}>Transport service ready</Text>
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
@@ -201,14 +359,8 @@ export default function NetworkScreen() {
           </View>
         </LinearGradient>
 
-        {/* Debug Info (only show in development) */}
-        {__DEV__ && (
-          <View style={styles.debugContainer}>
-            <Text style={styles.debugText}>
-              🔧 Debug: Using {Platform.OS === 'web' ? 'localhost' : 'IP'} - {API_BASE_URL}
-            </Text>
-          </View>
-        )}
+        {/* Server Status */}
+        {renderServerStatus()}
 
         {/* Tab Selector */}
         <View style={styles.tabContainer}>
@@ -267,12 +419,12 @@ export default function NetworkScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.searchButton}
+              style={[styles.searchButton, transportServerAvailable === false && styles.searchButtonDisabled]}
               onPress={searchBuses}
-              disabled={loading}
+              disabled={loading || transportServerAvailable === false}
             >
               <LinearGradient
-                colors={['#f57f17', '#f9a825']}
+                colors={transportServerAvailable === false ? ['#ccc', '#999'] : ['#f57f17', '#f9a825']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.buttonGradient}
@@ -305,12 +457,12 @@ export default function NetworkScreen() {
             </View>
 
             <TouchableOpacity
-              style={styles.searchButton}
+              style={[styles.searchButton, transportServerAvailable === false && styles.searchButtonDisabled]}
               onPress={searchBusRoute}
-              disabled={loading}
+              disabled={loading || transportServerAvailable === false}
             >
               <LinearGradient
-                colors={['#f57f17', '#f9a825']}
+                colors={transportServerAvailable === false ? ['#ccc', '#999'] : ['#f57f17', '#f9a825']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
                 style={styles.buttonGradient}
@@ -408,6 +560,52 @@ const styles = StyleSheet.create({
     color: '#FFF',
     marginTop: 5,
   },
+  statusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 8,
+    backgroundColor: '#f0f4f8',
+  },
+  statusSuccess: {
+    backgroundColor: '#e8f5e8',
+  },
+  statusError: {
+    backgroundColor: '#ffeaea',
+  },
+  statusText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  statusTextSuccess: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: '500',
+  },
+  statusTextError: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#ff6b6b',
+    fontWeight: '500',
+  },
+  helpButton: {
+    marginLeft: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    backgroundColor: '#ff6b6b',
+    borderRadius: 12,
+  },
+  helpButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
   tabContainer: {
     flexDirection: 'row',
     paddingHorizontal: 20,
@@ -434,68 +632,74 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     paddingHorizontal: 20,
+    marginBottom: 30,
   },
   inputContainer: {
-    marginBottom: 15,
+    marginBottom: 20,
   },
   inputLabel: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#5D4037',
+    color: '#333',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#FFF',
-    borderRadius: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 12,
-    fontSize: 16,
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: '#ddd',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: '#333',
   },
   searchButton: {
-    marginTop: 10,
-    borderRadius: 8,
+    borderRadius: 12,
     overflow: 'hidden',
+    marginTop: 10,
+  },
+  searchButtonDisabled: {
+    opacity: 0.6,
   },
   buttonGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
+    paddingVertical: 16,
     paddingHorizontal: 20,
   },
   buttonText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
     marginLeft: 8,
   },
   resultsContainer: {
-    marginTop: 20,
     paddingHorizontal: 20,
+    marginBottom: 30,
   },
   resultsTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#5D4037',
+    color: '#333',
     marginBottom: 15,
   },
   categoryTitle: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#f57f17',
-    marginVertical: 10,
+    marginTop: 20,
+    marginBottom: 10,
   },
   serviceCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
   },
   serviceHeader: {
@@ -507,7 +711,7 @@ const styles = StyleSheet.create({
   serviceName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#5D4037',
+    color: '#333',
     flex: 1,
   },
   ratingContainer: {
@@ -515,9 +719,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   rating: {
+    marginLeft: 4,
     fontSize: 14,
     color: '#f57f17',
-    marginLeft: 4,
+    fontWeight: '500',
   },
   serviceDetails: {
     flexDirection: 'row',
@@ -530,11 +735,12 @@ const styles = StyleSheet.create({
   timeLabel: {
     fontSize: 12,
     color: '#666',
+    marginBottom: 4,
   },
   time: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#5D4037',
+    color: '#333',
   },
   serviceInfo: {
     flexDirection: 'row',
@@ -550,63 +756,54 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#f57f17',
+    marginHorizontal: 10,
   },
   seats: {
     fontSize: 14,
     color: '#666',
-    marginLeft: 10,
   },
   bmtcCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 15,
-    marginBottom: 10,
+    padding: 16,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#f57f17',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowRadius: 4,
     elevation: 3,
   },
   busHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   busNumber: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#5D4037',
+    color: '#f57f17',
   },
   route: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 10,
+    color: '#333',
+    marginBottom: 12,
+    fontWeight: '500',
   },
   stopsContainer: {
-    marginTop: 5,
+    marginTop: 8,
   },
   stopsLabel: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#5D4037',
-    marginBottom: 5,
+    color: '#666',
+    marginBottom: 6,
   },
   stop: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#666',
     marginBottom: 2,
-  },
-  debugContainer: {
-    marginHorizontal: 20,
-    padding: 10,
-    backgroundColor: '#FFF3E0',
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  debugText: {
-    fontSize: 12,
-    color: '#F57F17',
-    textAlign: 'center',
   },
 }); 
